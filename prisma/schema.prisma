@@ -1,0 +1,157 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model accounts {
+  id                     BigInt      @id @default(autoincrement())
+  email                  String      @unique(map: "index_accounts_on_email") @default("") @db.VarChar
+  encrypted_password     String      @default("") @db.VarChar
+  reset_password_token   String?     @unique(map: "index_accounts_on_reset_password_token") @db.VarChar
+  reset_password_sent_at DateTime?   @db.Timestamp(6)
+  remember_created_at    DateTime?   @db.Timestamp(6)
+  user_id                BigInt
+  admin_id               BigInt
+  client_id              BigInt
+  created_at             DateTime    @db.Timestamp(6)
+  updated_at             DateTime    @db.Timestamp(6)
+  clients                clients     @relation(fields: [client_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_65d703860a")
+  admins                 admins      @relation(fields: [admin_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_93f6feb1b9")
+  users                  users       @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_b1e30bebc8")
+  addresses              addresses[]
+
+  @@index([admin_id], map: "index_accounts_on_admin_id")
+  @@index([client_id], map: "index_accounts_on_client_id")
+  @@index([user_id], map: "index_accounts_on_user_id")
+}
+
+model addresses {
+  id                  BigInt   @id @default(autoincrement())
+  phone_number        String?  @db.VarChar
+  city                String?  @db.VarChar
+  region              String?  @db.VarChar
+  mobile_money_number String?  @db.VarChar
+  street              String?  @db.VarChar
+  secondery_phone     String?  @db.VarChar
+  account_id          BigInt
+  created_at          DateTime @db.Timestamp(6)
+  updated_at          DateTime @db.Timestamp(6)
+  accounts            accounts @relation(fields: [account_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_ecb8c3ff41")
+
+  @@index([account_id], map: "index_addresses_on_account_id")
+}
+
+model admins {
+  id         BigInt     @id @default(autoincrement())
+  name       String?    @db.VarChar
+  role       Int?
+  created_at DateTime   @db.Timestamp(6)
+  updated_at DateTime   @db.Timestamp(6)
+  accounts   accounts[]
+}
+
+model ar_internal_metadata {
+  key        String   @id @db.VarChar
+  value      String?  @db.VarChar
+  created_at DateTime @db.Timestamp(6)
+  updated_at DateTime @db.Timestamp(6)
+}
+
+model client_payments {
+  id         BigInt   @id @default(autoincrement())
+  status     Int?
+  client_id  BigInt
+  amount     Decimal? @db.Decimal
+  created_at DateTime @db.Timestamp(6)
+  updated_at DateTime @db.Timestamp(6)
+  clients    clients  @relation(fields: [client_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_e4adce2942")
+
+  @@index([client_id], map: "index_client_payments_on_client_id")
+}
+
+model clients {
+  id                    BigInt            @id @default(autoincrement())
+  name                  String?           @db.VarChar
+  industry              Int?
+  tax_id                String?           @db.VarChar
+  bank_account_number   String?           @db.VarChar
+  account_status        Int?
+  client_commision      Int?
+  earning_report_status Boolean?
+  next_payment_date     DateTime?         @db.Date
+  employee_roaster_file String?           @db.VarChar
+  created_at            DateTime          @db.Timestamp(6)
+  updated_at            DateTime          @db.Timestamp(6)
+  accounts              accounts[]
+  client_payments       client_payments[]
+  users                 users[]
+}
+
+model savings {
+  id         BigInt   @id @default(autoincrement())
+  user_id    BigInt
+  amount     Decimal? @db.Decimal
+  created_at DateTime @db.Timestamp(6)
+  updated_at DateTime @db.Timestamp(6)
+  users      users    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_0a2c60972c")
+
+  @@index([user_id], map: "index_savings_on_user_id")
+}
+
+model savings_withdrawals {
+  id         BigInt   @id @default(autoincrement())
+  user_id    BigInt
+  amount     Decimal? @db.Decimal
+  created_at DateTime @db.Timestamp(6)
+  updated_at DateTime @db.Timestamp(6)
+  users      users    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_ad7d9d4797")
+
+  @@index([user_id], map: "index_savings_withdrawals_on_user_id")
+}
+
+model schema_migrations {
+  version String @id @db.VarChar
+}
+
+model users {
+  id                  BigInt                @id @default(autoincrement())
+  name                String?               @db.VarChar
+  base_salary         Decimal?              @db.Decimal
+  account_status      Int?
+  total_withdrawals   Decimal?              @db.Decimal
+  employee_id         String?               @db.VarChar
+  date_of_birth       DateTime?             @db.Date
+  back_account_number String?               @db.VarChar
+  available_balance   Decimal?              @db.Decimal
+  next_payment_date   DateTime?             @db.Date
+  activation_date     DateTime?             @db.Date
+  received_earlypay   Boolean?
+  savings_balance     Decimal?              @db.Decimal
+  client_id           BigInt
+  created_at          DateTime              @db.Timestamp(6)
+  updated_at          DateTime              @db.Timestamp(6)
+  accounts            accounts[]
+  savings             savings[]
+  savings_withdrawals savings_withdrawals[]
+  clients             clients               @relation(fields: [client_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_d3559eaf4c")
+  withdrawals         withdrawals[]
+
+  @@index([client_id], map: "index_users_on_client_id")
+}
+
+model withdrawals {
+  id         BigInt   @id @default(autoincrement())
+  user_id    BigInt
+  amount     Decimal? @db.Decimal
+  charges    Decimal? @db.Decimal
+  status     Int?
+  created_at DateTime @db.Timestamp(6)
+  updated_at DateTime @db.Timestamp(6)
+  users      users    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_75e44d8e7b")
+
+  @@index([user_id], map: "index_withdrawals_on_user_id")
+}
