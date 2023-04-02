@@ -21,6 +21,13 @@ export class UsersService {
       where: {
         employee_id: employeeId,
       },
+      include: {
+        accounts: {
+          include: {
+            addresses: true,
+          },
+        },
+      },
     });
   }
 

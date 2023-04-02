@@ -1,5 +1,4 @@
 import { Response } from 'express';
-import * as Prisma from '@prisma/client';
 import * as dotenv from 'dotenv';
 
 dotenv.config();

@@ -8,50 +8,46 @@ datasource db {
 }
 
 model accounts {
-  id                     BigInt      @id @default(autoincrement())
-  email                  String      @unique(map: "index_accounts_on_email") @default("") @db.VarChar
-  encrypted_password     String      @default("") @db.VarChar
-  reset_password_token   String?     @unique(map: "index_accounts_on_reset_password_token") @db.VarChar
-  reset_password_sent_at DateTime?   @db.Timestamp(6)
-  remember_created_at    DateTime?   @db.Timestamp(6)
-  user_id                BigInt
-  admin_id               BigInt
-  client_id              BigInt
-  created_at             DateTime    @db.Timestamp(6)
-  updated_at             DateTime    @db.Timestamp(6)
-  clients                clients     @relation(fields: [client_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_65d703860a")
-  admins                 admins      @relation(fields: [admin_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_93f6feb1b9")
-  users                  users       @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_b1e30bebc8")
-  addresses              addresses[]
+  id                     BigInt    @id @default(autoincrement())
+  email                  String    @unique(map: "index_accounts_on_email") @default("") @db.VarChar
+  encrypted_password     String    @default("") @db.VarChar
+  reset_password_token   String?   @unique(map: "index_accounts_on_reset_password_token") @db.VarChar
+  reset_password_sent_at DateTime? @db.Timestamp(6)
+  remember_created_at    DateTime? @db.Timestamp(6)
+  address_id             BigInt
+  created_at             DateTime  @db.Timestamp(6)
+  updated_at             DateTime  @db.Timestamp(6)
+  addresses              addresses @relation(fields: [address_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_198f25c0c3")
+  admins                 admins[]
+  clients                clients[]
+  users                  users[]
 
-  @@index([admin_id], map: "index_accounts_on_admin_id")
-  @@index([client_id], map: "index_accounts_on_client_id")
-  @@index([user_id], map: "index_accounts_on_user_id")
+  @@index([address_id], map: "index_accounts_on_address_id")
 }
 
 model addresses {
-  id                  BigInt   @id @default(autoincrement())
-  phone_number        String?  @db.VarChar
-  city                String?  @db.VarChar
-  region              String?  @db.VarChar
-  mobile_money_number String?  @db.VarChar
-  street              String?  @db.VarChar
-  secondery_phone     String?  @db.VarChar
-  account_id          BigInt
-  created_at          DateTime @db.Timestamp(6)
-  updated_at          DateTime @db.Timestamp(6)
-  accounts            accounts @relation(fields: [account_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_ecb8c3ff41")
-
-  @@index([account_id], map: "index_addresses_on_account_id")
+  id                  BigInt     @id @default(autoincrement())
+  phone_number        String?    @db.VarChar
+  city                String?    @db.VarChar
+  region              String?    @db.VarChar
+  mobile_money_number String?    @db.VarChar
+  street              String?    @db.VarChar
+  secondery_phone     String?    @db.VarChar
+  created_at          DateTime   @db.Timestamp(6)
+  updated_at          DateTime   @db.Timestamp(6)
+  accounts            accounts[]
 }
 
 model admins {
-  id         BigInt     @id @default(autoincrement())
-  name       String?    @db.VarChar
+  id         BigInt   @id @default(autoincrement())
+  name       String?  @db.VarChar
   role       Int?
-  created_at DateTime   @db.Timestamp(6)
-  updated_at DateTime   @db.Timestamp(6)
-  accounts   accounts[]
+  account_id BigInt
+  created_at DateTime @db.Timestamp(6)
+  updated_at DateTime @db.Timestamp(6)
+  accounts   accounts @relation(fields: [account_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_14a59fabad")
+
+  @@index([account_id], map: "index_admins_on_account_id")
 }
 
 model ar_internal_metadata {
@@ -84,11 +80,14 @@ model clients {
   earning_report_status Boolean?
   next_payment_date     DateTime?         @db.Date
   employee_roaster_file String?           @db.VarChar
+  account_id            BigInt
   created_at            DateTime          @db.Timestamp(6)
   updated_at            DateTime          @db.Timestamp(6)
-  accounts              accounts[]
   client_payments       client_payments[]
+  accounts              accounts          @relation(fields: [account_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_bed59fd791")
   users                 users[]
+
+  @@index([account_id], map: "index_clients_on_account_id")
 }
 
 model savings {
@@ -132,14 +131,16 @@ model users {
   received_earlypay   Boolean?
   savings_balance     Decimal?              @db.Decimal
   client_id           BigInt
+  account_id          BigInt
   created_at          DateTime              @db.Timestamp(6)
   updated_at          DateTime              @db.Timestamp(6)
-  accounts            accounts[]
   savings             savings[]
   savings_withdrawals savings_withdrawals[]
+  accounts            accounts              @relation(fields: [account_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_61ac11da2b")
   clients             clients               @relation(fields: [client_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_d3559eaf4c")
   withdrawals         withdrawals[]
 
+  @@index([account_id], map: "index_users_on_account_id")
   @@index([client_id], map: "index_users_on_client_id")
 }
 

@@ -39,12 +39,12 @@ export class UsersController {
    */
 
   @Get(':employee_id')
-  findOne(
+  async findOne(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
     @Param('employee_id') employee_id: string,
   ) {
-    const user = this.usersService.findOne(employee_id);
+    const user = await this.usersService.findOne(employee_id);
     return formatResponse(user, res, HttpStatus.OK);
   }
 
