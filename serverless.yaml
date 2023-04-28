@@ -1,0 +1,26 @@
+service: airlipay-api
+
+plugins:
+  - serverless-offline
+  - serverless-dotenv-plugin
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  stage: dev
+  profile: default
+  ecr:
+    images:
+      airlipay:
+        path: ./
+
+functions:
+  main: 
+    image: 338482076037.dkr.ecr.us-east-1.amazonaws.com/serverless-airlipay-api-dev:airlipay
+    events:
+      - http:
+          method: ANY
+          path: /
+      - http:
+          method: ANY
+          path: '{proxy+}'
