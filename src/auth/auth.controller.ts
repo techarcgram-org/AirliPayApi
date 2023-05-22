@@ -11,6 +11,7 @@ import {
   HttpStatus,
   Request,
   UseGuards,
+  Headers,
 } from '@nestjs/common';
 import { formatResponse } from '../lib/helpers';
 import { UserService } from 'src/user/user.service';
@@ -20,7 +21,9 @@ import { VerifyEmailSecretDto } from './dto/verifyEmailSecret.dto';
 import { CreateNewPasswordDto } from './dto/createNewPassword.dto';
 import { LocalAuthGuard } from './local-auth.guard';
 import { JwtAuthGuard } from './jwt-auth.guard';
+import { AuthGuard } from './auth.guard';
 import { AuthService } from './auth.service';
+import { LoginDto } from './dto/login.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -29,9 +32,10 @@ export class AuthController {
     private readonly authService: AuthService,
   ) {}
 
-  @Get()
-  getAll() {
-    return { message: 'hello all' };
+  @UseGuards(JwtAuthGuard)
+  @Get('/')
+  getAll(@Request() req) {
+    return { data: req.user };
   }
   /**
    * Send Email Verification Code.
@@ -74,7 +78,6 @@ export class AuthController {
   ) {
     const user = await this.usersService.findOneByEmail(body.email);
     const result = await this.usersService.verifyEmailCode(body.secret, user);
-    console.log('result', result);
     if (!result.code)
       return formatResponse(
         { message: result.message },
@@ -107,7 +110,6 @@ export class AuthController {
       );
     const user = await this.usersService.findOneById(parseInt(userId));
     const result = await this.usersService.createPassword(body.password, user);
-    console.log('result', result);
     if (!result.code)
       return formatResponse(
         { message: result.message },
@@ -119,7 +121,25 @@ export class AuthController {
 
   @UseGuards(LocalAuthGuard)
   @Post('/login')
-  async login(@Request() req) {
-    return this.authService.login(req.user);
+  async login(@Body() body: LoginDto, @Request() req) {
+    return this.authService.login(req.user, body.remember);
+  }
+
+  @Get('/validateAccessToken')
+  validateToken(@Headers('authorization') authorization: string, @Res() res) {
+    const token = authorization.replace('Bearer ', '');
+
+    if (this.authService.tokenIsValid(token)) {
+      return formatResponse(
+        { message: 'Valid Access token' },
+        res,
+        HttpStatus.OK,
+      );
+    }
+    return formatResponse(
+      { message: 'Invalid Token' },
+      res,
+      HttpStatus.BAD_REQUEST,
+    );
   }
 }

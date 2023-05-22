@@ -26,12 +26,23 @@ export class AuthService {
     throw new UnauthorizedException();
   }
 
-  async login(user: UserWithAccounts) {
+  async login(user: UserWithAccounts, remember: boolean) {
     const payload = { username: user.accounts.email, sub: user.id };
     delete user['accounts']['encrypted_password'];
     return {
-      access_token: this.jwtService.sign(payload),
+      access_token: remember
+        ? this.jwtService.sign(payload, { expiresIn: '60d' })
+        : this.jwtService.sign(payload, { expiresIn: '1d' }),
       data: user,
     };
+  }
+
+  tokenIsValid(token: string): boolean {
+    try {
+      this.jwtService.verify(token);
+      return true;
+    } catch (error) {
+      return false;
+    }
   }
 }

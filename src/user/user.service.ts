@@ -111,7 +111,6 @@ export class UserService {
   }
 
   async findOneById(userId: number): Promise<UserWithAccounts | undefined> {
-    console.log(typeof userId);
     const user = await this.prismaService.users.findFirst({
       where: {
         id: userId,
@@ -144,7 +143,6 @@ export class UserService {
         },
       },
     });
-    console.log(user);
     if (!user) throw new NotFoundException();
     return user;
   }

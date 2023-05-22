@@ -47,9 +47,7 @@ export class UsersController {
     @Res({ passthrough: true }) res: Response,
     @Query() queryParams: GetUserByEmployeeIdDto,
   ) {
-    console.log('employee', queryParams);
     const user = await this.usersService.findOne(queryParams.employeeId);
-    console.log(user);
     return formatResponse(user, res, HttpStatus.OK);
   }
 
@@ -67,11 +65,9 @@ export class UsersController {
     @Res({ passthrough: true }) res: Response,
     @Query() queryParams: GetUserByEmailDto,
   ) {
-    console.log('employee', queryParams);
     const user = await this.usersService.findOneByEmail(
       queryParams.employeeEmail,
     );
-    console.log(user);
     return formatResponse(user, res, HttpStatus.OK);
   }
 
