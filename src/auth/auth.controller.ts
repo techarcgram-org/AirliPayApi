@@ -24,6 +24,8 @@ import { JwtAuthGuard } from './jwt-auth.guard';
 import { AuthGuard } from './auth.guard';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
+import { ResetPasswordVerifyDto } from './dto/resetPasswordVerify.dto';
+import { ResetPasswordDto } from './dto/resetPassword.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -141,5 +143,54 @@ export class AuthController {
       res,
       HttpStatus.BAD_REQUEST,
     );
+  }
+
+  @Post('/resetPassword/sendEmail')
+  async passwordResetSendEmail(
+    @Body('email') email: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.usersService.sendPasswordResetEmail(email);
+    if (!result.code)
+      return formatResponse(
+        { message: result.message },
+        res,
+        HttpStatus.BAD_REQUEST,
+      );
+    return formatResponse({ message: result.message }, res, HttpStatus.OK);
+  }
+
+  @Post('/resetPassword/verifyToken')
+  async verifyResetToken(
+    @Body() body: ResetPasswordVerifyDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.usersService.verifyResetToken(
+      body.token,
+      body.email,
+    );
+    if (!result.code)
+      return formatResponse(
+        { message: result.message },
+        res,
+        HttpStatus.BAD_REQUEST,
+      );
+    return formatResponse({ message: result.message }, res, HttpStatus.OK);
+  }
+
+  @Post('/resetPassword')
+  async resetPassword(
+    @Body() body: ResetPasswordDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const user = await this.usersService.findOneByEmail(body.email);
+    const result = await this.usersService.createPassword(body.password, user);
+    if (!result.code)
+      return formatResponse(
+        { message: result.message },
+        res,
+        HttpStatus.BAD_REQUEST,
+      );
+    return formatResponse({ message: result.message }, res, HttpStatus.CREATED);
   }
 }

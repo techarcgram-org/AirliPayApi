@@ -165,6 +165,78 @@ export class UserService {
     return { message: 'password successfully created', code: 1 };
   }
 
+  async sendPasswordResetEmail(email: string) {
+    const secret = gen(5);
+    const user = await this.findOneByEmail(email);
+
+    try {
+      await this.mailService.sendMail({
+        to: user.accounts.email,
+        subject: 'AirliPay Password Reset',
+        template: 'transactional', // either change to ./transactional or rename transactional.html to confirmation.html
+        context: {
+          name: user.name,
+          secret,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      return { message: 'failed sending reset email', code: 0 };
+    }
+
+    try {
+      await this.prismaService.accounts.update({
+        where: {
+          id: user.account_id,
+        },
+        data: {
+          reset_password_token: secret,
+          reset_password_sent_at: new Date(),
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      return { message: 'error updating secret', code: 0 };
+    }
+    return { message: 'reset email sent successfully', code: 1 };
+  }
+
+  async verifyResetToken(token: string, email: string): Promise<any> {
+    const user = await this.findOneByEmail(email);
+    if (
+      user.accounts.reset_password_token == token &&
+      !this.isTokenExpired(user.accounts.reset_password_sent_at)
+    ) {
+      try {
+        await this.prismaService.accounts.update({
+          where: {
+            id: user.account_id,
+          },
+          data: {
+            reset_password_token: null,
+          },
+        });
+      } catch (error) {
+        console.log(error);
+        return { message: error, code: 0 };
+      }
+      return { message: 'verification success success', code: 1 };
+    } else {
+      return { message: 'invalid token', code: 0 };
+    }
+  }
+
+  async saveResetToken(email: string, resetToken: string) {
+    // Save the reset token and its expiry in your database
+    // Example: Update the user document with the reset token and its expiry
+  }
+
+  private isTokenExpired(tokenCreatedAtTime: Date): boolean {
+    const emailConfirmDatePlusOneHour = moment(tokenCreatedAtTime).add(1, 'h');
+    const now = moment();
+    return now > emailConfirmDatePlusOneHour;
+  }
+
   update(id: number, updateUserDto: UpdateUserDto) {
     return `This action updates a #${id} user`;
   }
