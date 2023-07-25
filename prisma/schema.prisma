@@ -42,6 +42,7 @@ model addresses {
   created_at          DateTime   @db.Timestamp(6)
   updated_at          DateTime   @db.Timestamp(6)
   accounts            accounts[]
+  banks               banks[]
 }
 
 model admins {
@@ -123,28 +124,31 @@ model schema_migrations {
 }
 
 model users {
-  id                  BigInt                @id @default(autoincrement())
-  name                String?               @db.VarChar
-  base_salary         Decimal?              @db.Decimal
-  account_status      Int?
-  total_withdrawals   Decimal?              @db.Decimal
-  employee_id         String?               @db.VarChar
-  date_of_birth       DateTime?             @db.Date
-  back_account_number String?               @db.VarChar
-  available_balance   Decimal?              @db.Decimal
-  next_payment_date   DateTime?             @db.Date
-  activation_date     DateTime?             @db.Date
-  received_earlypay   Boolean?
-  savings_balance     Decimal?              @db.Decimal
-  client_id           BigInt
-  account_id          BigInt
-  created_at          DateTime              @db.Timestamp(6)
-  updated_at          DateTime              @db.Timestamp(6)
-  savings             savings[]
-  savings_withdrawals savings_withdrawals[]
-  accounts            accounts              @relation(fields: [account_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_61ac11da2b")
-  clients             clients               @relation(fields: [client_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_d3559eaf4c")
-  withdrawals         withdrawals[]
+  id                         BigInt                       @id @default(autoincrement())
+  name                       String?                      @db.VarChar
+  base_salary                Decimal?                     @db.Decimal
+  account_status             Int?
+  total_withdrawals          Decimal?                     @db.Decimal
+  employee_id                String?                      @db.VarChar
+  date_of_birth              DateTime?                    @db.Date
+  back_account_number        String?                      @db.VarChar
+  available_balance          Decimal?                     @db.Decimal
+  next_payment_date          DateTime?                    @db.Date
+  activation_date            DateTime?                    @db.Date
+  received_earlypay          Boolean?
+  savings_balance            Decimal?                     @db.Decimal
+  client_id                  BigInt
+  account_id                 BigInt
+  created_at                 DateTime                     @db.Timestamp(6)
+  updated_at                 DateTime                     @db.Timestamp(6)
+  account_settings           account_settings[]
+  savings                    savings[]
+  savings_withdrawals        savings_withdrawals[]
+  user_banks                 user_banks[]
+  user_mobile_money_accounts user_mobile_money_accounts[]
+  accounts                   accounts                     @relation(fields: [account_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_61ac11da2b")
+  clients                    clients                      @relation(fields: [client_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_d3559eaf4c")
+  withdrawals                withdrawals[]
 
   @@index([account_id], map: "index_users_on_account_id")
   @@index([client_id], map: "index_users_on_client_id")
@@ -161,4 +165,67 @@ model withdrawals {
   users      users    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_75e44d8e7b")
 
   @@index([user_id], map: "index_withdrawals_on_user_id")
+}
+
+model banks {
+  id           BigInt       @id @default(autoincrement())
+  name         String?      @db.VarChar
+  is_partner   Boolean?
+  supports_api Boolean?
+  address_id   BigInt
+  created_at   DateTime     @db.Timestamp(6)
+  updated_at   DateTime     @db.Timestamp(6)
+  addresses    addresses    @relation(fields: [address_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_310a58ada9")
+  user_banks   user_banks[]
+
+  @@index([address_id], map: "index_banks_on_address_id")
+}
+
+model user_banks {
+  id               BigInt             @id @default(autoincrement())
+  account_number   String?            @db.VarChar
+  user_id          BigInt
+  bank_id          BigInt
+  created_at       DateTime           @db.Timestamp(6)
+  updated_at       DateTime           @db.Timestamp(6)
+  account_settings account_settings[]
+  banks            banks              @relation(fields: [bank_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_8489a27145")
+  users            users              @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_9e84f48ddd")
+
+  @@index([bank_id], map: "index_user_banks_on_bank_id")
+  @@index([user_id], map: "index_user_banks_on_user_id")
+}
+
+model account_settings {
+  id                         BigInt                      @id @default(autoincrement())
+  language                   String?                     @db.VarChar
+  security_pin               String?                     @db.VarChar
+  notification_enabled       Boolean?
+  pin_enabled                Boolean?
+  two_fa_enabled             Boolean?
+  default_bank_id            BigInt?
+  default_momo_account_id    BigInt?
+  user_id                    BigInt
+  created_at                 DateTime                    @db.Timestamp(6)
+  updated_at                 DateTime                    @db.Timestamp(6)
+  user_banks                 user_banks?                 @relation(fields: [default_bank_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_68404ac0af")
+  user_mobile_money_accounts user_mobile_money_accounts? @relation(fields: [default_momo_account_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_9a762b5dd2")
+  users                      users                       @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_e382d4202a")
+
+  @@index([default_bank_id], map: "index_account_settings_on_default_bank_id")
+  @@index([user_id], map: "index_account_settings_on_user_id")
+  @@index([default_momo_account_id], map: "index_account_settings_on_default_momo_account_id")
+}
+
+model user_mobile_money_accounts {
+  id               BigInt             @id @default(autoincrement())
+  phone_number     String?            @db.VarChar
+  operator         String?            @db.VarChar
+  user_id          BigInt
+  created_at       DateTime           @db.Timestamp(6)
+  updated_at       DateTime           @db.Timestamp(6)
+  account_settings account_settings[]
+  users            users              @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_f3b530b4f3")
+
+  @@index([user_id], map: "index_user_mobile_money_accounts_on_user_id")
 }

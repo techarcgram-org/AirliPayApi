@@ -4,7 +4,7 @@ import serverlessExpress from '@vendia/serverless-express';
 import { Callback, Context, Handler } from 'aws-lambda';
 
 import { AppModule } from './app.module';
-import 'src/lib/bingint';
+import 'src/common/lib/bingint';
 
 let server: Handler;
 

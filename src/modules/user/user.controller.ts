@@ -11,7 +11,7 @@ import {
   HttpStatus,
   Query,
 } from '@nestjs/common';
-import { formatResponse } from '../lib/helpers';
+import { formatResponse } from '../../common/lib/helpers';
 import { UserService } from './user.service';
 import { Response, Request } from 'express';
 import { CreateUserDto } from './dto/create-user.dto';

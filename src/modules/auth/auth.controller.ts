@@ -13,8 +13,8 @@ import {
   UseGuards,
   Headers,
 } from '@nestjs/common';
-import { formatResponse } from '../lib/helpers';
-import { UserService } from 'src/user/user.service';
+import { formatResponse } from '../../common/lib/helpers';
+import { UserService } from 'src/modules/user/user.service';
 import { Response, query } from 'express';
 import { SendConfirmEmailDto } from './dto/sendEmail.dto';
 import { VerifyEmailSecretDto } from './dto/verifyEmailSecret.dto';
@@ -124,7 +124,7 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('/login')
   async login(@Body() body: LoginDto, @Request() req) {
-    return this.authService.login(req.user, body.remember);
+    return this.authService.login(req.user, Boolean(body.remember));
   }
 
   @Get('/validateAccessToken')
