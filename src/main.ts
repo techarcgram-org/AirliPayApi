@@ -10,8 +10,8 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe());
   const config = new DocumentBuilder()
-    .setTitle('AiliPay Swagger')
-    .setDescription('AiliPay Api Docs')
+    .setTitle('AirliPay Swagger')
+    .setDescription('AirliPay Api Docs')
     .setVersion('1.0')
     .build();
   const document = SwaggerModule.createDocument(app, config);
