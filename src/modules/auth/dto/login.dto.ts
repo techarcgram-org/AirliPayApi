@@ -22,6 +22,6 @@ export class LoginDto {
     type: 'string',
     description: 'remember me bolean',
   })
-  @IsString()
-  remember: string;
+  @IsBoolean()
+  remember: boolean;
 }
