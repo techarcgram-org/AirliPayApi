@@ -14,4 +14,11 @@ type UserAuthObject = {
   id: string;
 };
 
-export { UserWithAccounts, UserAuthObject };
+type UserSession = {
+  username: string;
+  sub: number;
+  iat: number;
+  exp: number;
+};
+
+export { UserWithAccounts, UserAuthObject, UserSession };

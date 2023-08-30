@@ -1,4 +1,5 @@
-import { TelecomOperator } from '../constants';
+import { TelecomOperator, TestNumbers } from '../constants';
+import * as currency from 'currency.js';
 
 export const telecomOperator = (phoneNumber: string): TelecomOperator => {
   const key = phoneNumber[4];
@@ -7,6 +8,9 @@ export const telecomOperator = (phoneNumber: string): TelecomOperator => {
   }
   if (key === '9') {
     return TelecomOperator.ORANGE;
+  }
+  if (phoneNumber.indexOf('46733') === 0) {
+    return TelecomOperator.MTN;
   }
   if (phoneNumber.indexOf('23765') < 0) {
     return TelecomOperator.UNKNOWN;
@@ -23,5 +27,40 @@ export const telecomOperator = (phoneNumber: string): TelecomOperator => {
 
 export const isValidPhoneNumber = (phoneNumber: string): boolean => {
   const regex = new RegExp('^2376[5-9]{1}\\d{7}$');
-  return regex.test(phoneNumber);
+  return (
+    regex.test(phoneNumber) ||
+    !!TestNumbers.find((number) => number === phoneNumber)
+  );
+};
+
+export const logPrefix = () => {
+  const e = new Error();
+  const frame = e.stack.split('\n')[2];
+  const lineNumber = frame.split(':').reverse()[1];
+  const functionName = frame.split(' ')[5];
+  return `[${functionName}:${lineNumber}]`;
+};
+
+export const toAirliPayMoney = (amt: number) => {
+  return currency(amt, { precision: 2 }).value;
+};
+
+export const delay = (value: number) => {
+  return null;
+};
+
+export const addAToB = (a: number, b: number): number => {
+  const additionObj = currency(a, { precision: 2 }).add(b).value;
+  return additionObj;
+};
+
+export const subtractBFromA = (a: number, b: number): number => {
+  const subtractionObj = currency(a, { precision: 2 }).subtract(b).value;
+  return subtractionObj;
+};
+
+export const formatPhonenumber = (phoneNumber: string) => {
+  const number = phoneNumber.split('237');
+  const result = number[1].match(/.{1,3}/g) ?? [];
+  return `(+237) ${result[0]} ${result[1]} ${result[2]}`;
 };

@@ -4,25 +4,21 @@ import {
   Post,
   Body,
   Patch,
-  Param,
-  Delete,
   UseGuards,
   Res,
   HttpStatus,
-  Req,
 } from '@nestjs/common';
 import { AccountSettingsService } from './account-settings.service';
-import { CreateAccountSettingDto } from './dto/create-account-setting.dto';
 import { UpdateAccountSettingDto } from './dto/update-account-setting.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
-import { PrismaClient } from '@prisma/client';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { AddUserBankAccountDto } from './dto/add-user-bank-account.dto';
 import { formatResponse } from 'src/common/lib/helpers';
 import { AddUserMobileMoneyAccountDto } from './dto/add-user-mobile-money-account.dto';
 import { CreateBankDto } from './dto/create-bank.dto';
-import { Response, Request } from 'express';
+import { Response } from 'express';
+import { UserSession } from 'src/common/types/user.type';
 
 @Controller('account-settings')
 export class AccountSettingsController {
@@ -34,7 +30,6 @@ export class AccountSettingsController {
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
   findAll(@GetUser() user) {
-    console.log(user);
     return 'okay';
   }
 
@@ -45,11 +40,7 @@ export class AccountSettingsController {
     @Body() createBankDto: CreateBankDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const result = await this.accountSettingsService.addBank(createBankDto);
-    if (!result.code) {
-      return formatResponse(result.message, res, HttpStatus.BAD_REQUEST);
-    }
-    return formatResponse(result.message, res, HttpStatus.OK);
+    return await this.accountSettingsService.addBank(createBankDto);
   }
 
   // @Get(':id')
@@ -57,20 +48,19 @@ export class AccountSettingsController {
   //   return this.accountSettingsService.findOne(+id);
   // }
 
-  @Patch(':id')
+  @Patch('')
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
-  update(
+  async update(
     @Res({ passthrough: true }) res,
-    @Param('id') id: string,
     @Body() updateAccountSettingDto: UpdateAccountSettingDto,
-    @GetUser() user,
+    @GetUser() user: UserSession,
   ) {
-    const result = this.accountSettingsService.update(
+    const result = await this.accountSettingsService.update(
       updateAccountSettingDto,
-      user.id,
+      user.sub,
     );
-    if (result) {
+    if (!result) {
       return formatResponse(result, res, HttpStatus.BAD_REQUEST);
     }
     return formatResponse(result, res, HttpStatus.OK);

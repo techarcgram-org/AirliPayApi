@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UserService } from 'src/modules/user/user.service';
 import { PrismaService } from 'src/common/services/prisma.service';
@@ -8,6 +8,13 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { LocalStrategy } from './local.strategy';
 import { JwtStrategy } from './jwt.strategy';
+import { AppConfigModule } from 'src/config/config.module';
+import { AppConfigService } from 'src/config/config.service';
+import { AccountSettingsService } from '../account-settings/account-settings.service';
+import { AirlipayBalanceService } from '../airlipay-balance/airlipay-balance.service';
+import { SavingsBalanceService } from '../savings-balance/savings-balance.service';
+import { PaymentService } from 'src/core/payment/payment.service';
+import { PaymentModule } from 'src/core/payment/payment.module';
 
 @Module({
   providers: [
@@ -16,14 +23,28 @@ import { JwtStrategy } from './jwt.strategy';
     PrismaService,
     LocalStrategy,
     JwtStrategy,
+    Logger,
+    AccountSettingsService,
+    AirlipayBalanceService,
+    SavingsBalanceService,
   ],
   imports: [
+    AppConfigModule,
+    PaymentModule,
     UserModule,
     PassportModule,
-    JwtModule.register({
+    JwtModule.registerAsync({
       global: true,
-      secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: process.env.JWT_SIGNIN_DURATION },
+      imports: [AppConfigModule],
+      inject: [AppConfigService],
+      useFactory: async (config: AppConfigService) => {
+        return {
+          secret: config.jwt.secret,
+          signOptions: {
+            expiresIn: config.jwt.expiresIn,
+          },
+        };
+      },
     }),
   ],
   controllers: [AuthController],

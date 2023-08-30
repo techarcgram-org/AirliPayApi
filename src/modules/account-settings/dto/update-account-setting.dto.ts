@@ -1,39 +1,52 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import {
+  IsBoolean,
+  IsEmpty,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+} from 'class-validator';
 
 export class UpdateAccountSettingDto {
   @ApiProperty({
     type: 'string',
     description: 'User prefered language',
   })
-  @IsString()
-  prefered_language: string;
+  language: string;
 
   @ApiProperty({
     type: 'string',
     description: 'Users default bnak',
   })
-  @IsNumber()
-  default_bank: number;
+  default_bank_id: number;
 
   @ApiProperty({
     type: 'string',
     description: 'The users default/prefered mobile money account',
   })
-  @IsNumber()
   default_momo_account_id: number;
 
   @ApiProperty({
     type: 'string',
     description: 'users private security pin for transactions ',
   })
-  @IsString()
   security_pin: string;
 
   @ApiProperty({
     type: 'string',
     description: 'users private security pin for transactions ',
   })
-  @IsBoolean()
   notification_enabled: boolean;
+
+  @ApiProperty({
+    type: 'string',
+    description: 'enable users personal pin ',
+  })
+  pin_enabled: boolean;
+
+  @ApiProperty({
+    type: 'string',
+    description: 'enable users two factor authentication',
+  })
+  two_fa_enabled: boolean;
 }

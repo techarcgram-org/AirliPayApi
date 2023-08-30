@@ -3,15 +3,13 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 export default () => ({
-  DATABASE_URL: process.env.DB_CONNECTION_STRING,
-  HONEY_BADGER_API_KEY: process.env.HONEY_BADGER_API_KEY,
-  TYPEORM_SEEDING_FACTORIES: process.env.TYPEORM_SEEDING_FACTORIES,
-  TYPEORM_SEEDING_SEEDS: process.env.TYPEORM_SEEDING_SEEDS,
-  JWT_SECRET: process.env.JWT_SECRET,
-  EMAIL_PASSWORD: process.env.EMAIL_PASSWORD,
-
-  companyEmail: process.env.COMPANY_EMAIL, // 📧
-
+  // DATABASE_URL: process.env.DB_CONNECTION_STRING,
+  // HONEY_BADGER_API_KEY: process.env.HONEY_BADGER_API_KEY,
+  // TYPEORM_SEEDING_FACTORIES: process.env.TYPEORM_SEEDING_FACTORIES,
+  // TYPEORM_SEEDING_SEEDS: process.env.TYPEORM_SEEDING_SEEDS,
+  // JWT_SECRET: process.env.JWT_SECRET,
+  // EMAIL_PASSWORD: process.env.EMAIL_PASSWORD,
+  // companyEmail: process.env.COMPANY_EMAIL, // 📧
   // elasticsearch: {
   //   node: process.env.ELASTIC_SEARCH_NODE,
   //   username: process.env.ELASTIC_SEARCH_USERNAME,

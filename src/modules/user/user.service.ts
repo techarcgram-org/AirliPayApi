@@ -5,7 +5,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UserWithAccounts } from 'src/common/types/user.type';
 import { PrismaService } from 'src/common/services/prisma.service';
 import { MailService } from 'src/core/mail/mail.service';
-import moment from 'moment';
+import * as moment from 'moment';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()

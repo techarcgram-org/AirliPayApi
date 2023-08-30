@@ -4,9 +4,11 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import 'src/common/lib/bingint';
 import { ValidationPipe } from '@nestjs/common';
+import { AppConfigService } from './config/config.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const appConfig: AppConfigService = app.get(AppConfigService);
 
   app.useGlobalPipes(new ValidationPipe());
   const config = new DocumentBuilder()
@@ -17,6 +19,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
   app.enableCors();
-  await app.listen(process.env.SERVICE_PORT || 3001);
+  // await app.listen(appConfig.app.servicePort || 3001);
+  await app.listen(3001);
 }
 bootstrap();
