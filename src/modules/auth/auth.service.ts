@@ -4,7 +4,7 @@ import { UserService } from 'src/modules/user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UserWithAccounts } from 'src/common/types/user.type';
-import { AccountSettingsService } from '../account-settings/account-settings.service';
+import { AccountStatus } from 'src/common/constants';
 
 @Injectable()
 export class AuthService {
@@ -18,7 +18,8 @@ export class AuthService {
     const user = await this.userService.findOneByEmail(username);
     if (
       user &&
-      bcrypt.compareSync(password, user.accounts.encrypted_password)
+      bcrypt.compareSync(password, user.accounts.encrypted_password) &&
+      user.accounts.account_status === AccountStatus.ACTIVE
     ) {
       // const { encrypted_password, ...result } = user;
       user['accounts']['encrypted_password'] = null;

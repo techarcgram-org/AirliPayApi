@@ -7,6 +7,7 @@ export enum TelecomOperator {
 export enum PaymentType {
   REQUEST = 'REQUEST',
   DEPOSIT = 'DEPOSIT',
+  WITHDRAW = 'WITHDRAW',
 }
 
 export enum PaymentStatus {
@@ -34,6 +35,13 @@ export enum TransactionType {
   INTERESTWITHDRAW = 'INTERESTWITHDRAW',
   WITHDRAWAL = 'WITHDRAW',
   AUTO_INTERNAL_TRANSFER_FROM_GOAL = 'AUTO_INTERNALTRANSFERFROMGOAL',
+}
+
+export enum AccountStatus {
+  DEACTIVATED = 'DEACTIVATED',
+  ACTIVE = 'ACTIVE',
+  PENDING = 'PENDING',
+  BLOCKEDBANNED = 'BLOCKEDBANNED',
 }
 
 export const TestNumbers = [

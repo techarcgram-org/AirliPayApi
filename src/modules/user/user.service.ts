@@ -1,4 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  Logger,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 import { gen } from 'n-digit-token';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -7,18 +13,18 @@ import { PrismaService } from 'src/common/services/prisma.service';
 import { MailService } from 'src/core/mail/mail.service';
 import * as moment from 'moment';
 import * as bcrypt from 'bcrypt';
+import { AccountStatus } from 'src/common/constants';
+import { logPrefix } from 'src/common/utils/util';
 
 @Injectable()
 export class UserService {
-  private code;
   private saltRounds = 12;
 
   constructor(
     private readonly prismaService: PrismaService,
     private mailService: MailService,
-  ) {
-    this.code = Math.floor(1000 + Math.random() * 90000);
-  }
+    private logger: Logger,
+  ) {}
 
   create(createUserDto: CreateUserDto) {
     return 'This action adds a new user';
@@ -42,7 +48,7 @@ export class UserService {
         },
       });
     } catch (error) {
-      console.log(error);
+      this.logger.error(`${logPrefix()} ${error}`);
       return { message: 'failed sending confirmation email', code: 0 };
     }
 
@@ -57,7 +63,7 @@ export class UserService {
         },
       });
     } catch (error) {
-      console.log(error);
+      this.logger.error(`${logPrefix()} ${error}`);
       return { message: 'error updating secret', code: 0 };
     }
     return { message: 'email sent successfully', code: 1 };
@@ -83,7 +89,7 @@ export class UserService {
           },
         });
       } catch (error) {
-        console.log(error);
+        this.logger.error(`${logPrefix()} ${error}`);
         return { message: error, code: 0 };
       }
       return { message: 'verification success success', code: 1 };
@@ -98,11 +104,8 @@ export class UserService {
         employee_id: employeeId,
       },
       include: {
-        accounts: {
-          include: {
-            addresses: true,
-          },
-        },
+        addresses: true,
+        accounts: true,
       },
     });
 
@@ -116,11 +119,8 @@ export class UserService {
         id: userId,
       },
       include: {
-        accounts: {
-          include: {
-            addresses: true,
-          },
-        },
+        addresses: true,
+        accounts: true,
       },
     });
 
@@ -129,20 +129,27 @@ export class UserService {
   }
 
   async findOneByEmail(email: string): Promise<UserWithAccounts | undefined> {
-    const user = await this.prismaService.users.findFirst({
-      where: {
-        accounts: {
-          email: email,
-        },
-      },
-      include: {
-        accounts: {
-          include: {
-            addresses: true,
+    let user: UserWithAccounts;
+    try {
+      user = await this.prismaService.users.findFirst({
+        where: {
+          accounts: {
+            email: email,
           },
         },
-      },
-    });
+        include: {
+          addresses: true,
+          accounts: true,
+        },
+      });
+    } catch (error) {
+      this.logger.error(`${logPrefix()} ${error}`);
+      throw new HttpException(
+        `server error: ${error}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
     if (!user) throw new NotFoundException();
     return user;
   }
@@ -156,6 +163,7 @@ export class UserService {
         },
         data: {
           encrypted_password: hashedPassword,
+          account_status: AccountStatus.ACTIVE,
         },
       });
     } catch (error) {

@@ -17,12 +17,13 @@ import {
   telecomOperator,
   toAirliPayMoney,
 } from 'src/common/utils/util';
-import { PaymentStatus, PaymentType } from 'src/common/constants';
-import * as moment from 'moment';
 import {
-  airlipay_balances,
-  early_withdrawal_transactions,
-} from '@prisma/client';
+  PaymentStatus,
+  PaymentType,
+  TransactionType,
+} from 'src/common/constants';
+import * as moment from 'moment';
+import { airlipay_balances, early_transactions } from '@prisma/client';
 import { UpdateAirlipayBalanceDto } from './dto/update-airlipay-balance.dto';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import currency from 'currency.js';
@@ -80,18 +81,17 @@ export class AirlipayBalanceService {
   }
 
   async withdraw(user: UserSession, amount: number, phoneNumber: string) {
-    let pendingTransac: early_withdrawal_transactions;
+    let pendingTransac: early_transactions;
     let earlyBalance: airlipay_balances;
-    let transaction: early_withdrawal_transactions;
+    let transaction: early_transactions;
     let payment;
     try {
-      pendingTransac =
-        await this.prismaService.early_withdrawal_transactions.findFirst({
-          where: {
-            user_id: user.sub,
-            status: PaymentStatus.PENDING,
-          },
-        });
+      pendingTransac = await this.prismaService.early_transactions.findFirst({
+        where: {
+          user_id: user.sub,
+          status: PaymentStatus.PENDING,
+        },
+      });
     } catch (error) {
       this.logger.error(`${logPrefix()} ${error}`);
       throw new HttpException(
@@ -123,24 +123,23 @@ export class AirlipayBalanceService {
       throw new HttpException(`Insufficient balance`, HttpStatus.BAD_REQUEST);
 
     try {
-      transaction =
-        await this.prismaService.early_withdrawal_transactions.create({
-          data: {
-            user_id: user.sub,
-            status: 'PENDING',
-            transaction_type: 'WITHDRAW',
-            initiated_date: moment().format(),
-            execution_date: moment().format(),
-            amount: toAirliPayMoney(amount),
-            fees: 0,
-            operator: telecomOperator(phoneNumber),
-            phone_number: formatPhonenumber(phoneNumber),
-            new_balance: subtractBFromA(earlyBalance.balance, amount),
-            old_balance: earlyBalance.balance,
-            created_at: moment().format(),
-            updated_at: moment().format(),
-          },
-        });
+      transaction = await this.prismaService.early_transactions.create({
+        data: {
+          user_id: user.sub,
+          status: PaymentStatus.PENDING,
+          transaction_type: PaymentType.WITHDRAW,
+          initiated_date: moment().format(),
+          execution_date: moment().format(),
+          amount: toAirliPayMoney(amount),
+          fees: 0,
+          operator: telecomOperator(phoneNumber),
+          phone_number: formatPhonenumber(phoneNumber),
+          new_balance: subtractBFromA(earlyBalance.balance, amount),
+          old_balance: earlyBalance.balance,
+          created_at: moment().format(),
+          updated_at: moment().format(),
+        },
+      });
       payment = await this.paymentService.initTransaction(
         PaymentType.DEPOSIT,
         phoneNumber,
@@ -173,7 +172,7 @@ export class AirlipayBalanceService {
       };
       if (response.status === PaymentStatus.SUCCESS) {
         try {
-          await this.prismaService.early_withdrawal_transactions.update({
+          await this.prismaService.early_transactions.update({
             where: {
               id: transaction.id,
             },
@@ -190,7 +189,7 @@ export class AirlipayBalanceService {
           );
         }
       } else if (response.status === PaymentStatus.FAILED) {
-        await this.prismaService.early_withdrawal_transactions.update({
+        await this.prismaService.early_transactions.update({
           where: {
             id: transaction.id,
           },
@@ -204,23 +203,22 @@ export class AirlipayBalanceService {
       }
     });
 
-    transaction =
-      await this.prismaService.early_withdrawal_transactions.findFirst({
-        where: {
-          id: transaction.id,
-        },
-      });
+    transaction = await this.prismaService.early_transactions.findFirst({
+      where: {
+        id: transaction.id,
+      },
+    });
 
     return transaction;
   }
 
   // @Cron(CronExpression.EVERY_HOUR)
-  @Cron('0 */1 * * * 1-5')
+  @Cron('0 0 */1 * * 1-5')
   async updateBalance() {
     try {
       const users = await this.prismaService.users.findMany();
       users.forEach(async (user) => {
-        const biMinutePay = (user.base_salary as any) / 2 / 20 / 24 / 60;
+        const biHourlyPay = (user.base_salary as any) / 2 / 20 / 24;
         const balance = await this.prismaService.airlipay_balances.findFirst({
           where: {
             user_id: user.id,
@@ -232,7 +230,22 @@ export class AirlipayBalanceService {
               id: balance.id,
             },
             data: {
-              balance: addAToB(balance.balance, biMinutePay),
+              balance: addAToB(balance.balance, biHourlyPay),
+            },
+          });
+          await this.prismaService.early_transactions.create({
+            data: {
+              user_id: user.id,
+              status: PaymentStatus.SUCCESS,
+              initiated_date: moment().format(),
+              execution_date: moment().format(),
+              amount: toAirliPayMoney(biHourlyPay),
+              fees: 0,
+              transaction_type: PaymentType.DEPOSIT,
+              new_balance: addAToB(balance.balance, biHourlyPay),
+              old_balance: balance.balance,
+              created_at: moment().format(),
+              updated_at: moment().format(),
             },
           });
         }

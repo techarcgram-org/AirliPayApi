@@ -9,52 +9,68 @@ datasource db {
 }
 
 model accounts {
-  id                         BigInt    @id @default(autoincrement())
-  email                      String    @unique(map: "index_accounts_on_email") @default("") @db.VarChar
-  encrypted_password         String    @default("") @db.VarChar
-  reset_password_token       String?   @unique(map: "index_accounts_on_reset_password_token") @db.VarChar
-  reset_password_sent_at     DateTime? @db.Timestamp(6)
-  remember_created_at        DateTime? @db.Timestamp(6)
-  confirm_secret             String?   @db.VarChar
+  id                         BigInt                @id @default(autoincrement())
+  email                      String                @unique(map: "index_accounts_on_email") @default("") @db.VarChar
+  encrypted_password         String                @default("") @db.VarChar
+  username                   String?               @db.VarChar
+  phone_number               String?               @db.VarChar
+  reset_password_token       String?               @unique(map: "index_accounts_on_reset_password_token") @db.VarChar
+  reset_password_sent_at     DateTime?             @db.Timestamp(6)
+  remember_created_at        DateTime?             @db.Timestamp(6)
+  sign_in_count              Int                   @default(0)
+  current_sign_in_at         DateTime?             @db.Timestamp(6)
+  last_sign_in_at            DateTime?             @db.Timestamp(6)
+  current_sign_in_ip         String?               @db.VarChar
+  last_sign_in_ip            String?               @db.VarChar
+  confirm_secret             String?               @db.VarChar
   email_confirmed            Boolean?
-  email_confirmation_sent_at DateTime? @db.Timestamp(6)
+  email_confirmation_sent_at DateTime?             @db.Timestamp(6)
   phone_confirmed            Boolean?
-  phone_confirmation_sent_at DateTime? @db.Timestamp(6)
-  address_id                 BigInt
-  created_at                 DateTime  @db.Timestamp(6)
-  updated_at                 DateTime  @db.Timestamp(6)
-  addresses                  addresses @relation(fields: [address_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_198f25c0c3")
+  phone_confirmation_sent_at DateTime?             @db.Timestamp(6)
+  account_status             account_status_types? @default(PENDING)
+  activation_date            DateTime?             @db.Date
+  access_token               String?               @db.VarChar
+  refresh_token              String?               @db.VarChar
+  failed_attempts            Int                   @default(0)
+  unlock_token               String?               @db.VarChar
+  locked_at                  DateTime?             @db.Timestamp(6)
+  account_type               account_types
+  created_at                 DateTime              @db.Timestamp(6)
+  updated_at                 DateTime              @db.Timestamp(6)
   admins                     admins[]
   clients                    clients[]
   users                      users[]
-
-  @@index([address_id], map: "index_accounts_on_address_id")
 }
 
 model addresses {
-  id                  BigInt     @id @default(autoincrement())
-  phone_number        String?    @db.VarChar
-  city                String?    @db.VarChar
-  region              String?    @db.VarChar
-  mobile_money_number String?    @db.VarChar
-  street              String?    @db.VarChar
-  secondery_phone     String?    @db.VarChar
-  created_at          DateTime   @db.Timestamp(6)
-  updated_at          DateTime   @db.Timestamp(6)
-  accounts            accounts[]
+  id                  BigInt    @id @default(autoincrement())
+  phone_number        String?   @db.VarChar
+  city                String?   @db.VarChar
+  region              String?   @db.VarChar
+  mobile_money_number String?   @db.VarChar
+  street              String?   @db.VarChar
+  secondery_phone     String?   @db.VarChar
+  created_at          DateTime  @db.Timestamp(6)
+  updated_at          DateTime  @db.Timestamp(6)
+  admins              admins[]
   banks               banks[]
+  clients             clients[]
+  users               users[]
 }
 
 model admins {
-  id         BigInt   @id @default(autoincrement())
-  name       String?  @db.VarChar
+  id         BigInt    @id @default(autoincrement())
+  name       String?   @db.VarChar
   role       Int?
   account_id BigInt
-  created_at DateTime @db.Timestamp(6)
-  updated_at DateTime @db.Timestamp(6)
-  accounts   accounts @relation(fields: [account_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_14a59fabad")
+  address_id BigInt
+  created_at DateTime  @db.Timestamp(6)
+  updated_at DateTime  @db.Timestamp(6)
+  accounts   accounts  @relation(fields: [account_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_14a59fabad")
+  addresses  addresses @relation(fields: [address_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_c8120b7a66")
 
   @@index([account_id], map: "index_admins_on_account_id")
+  @@index([address_id], map: "index_admins_on_address_id")
 }
 
 model ar_internal_metadata {
@@ -81,42 +97,21 @@ model clients {
   name                  String?           @db.VarChar
   industry              Int?
   tax_id                String?           @db.VarChar
-  bank_account_number   String?           @db.VarChar
-  account_status        Int?
   client_commision      Int?
   earning_report_status Boolean?
   next_payment_date     DateTime?         @db.Date
   employee_roaster_file String?           @db.VarChar
   account_id            BigInt
+  address_id            BigInt
   created_at            DateTime          @db.Timestamp(6)
   updated_at            DateTime          @db.Timestamp(6)
   client_payments       client_payments[]
+  addresses             addresses         @relation(fields: [address_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_56e36fce15")
   accounts              accounts          @relation(fields: [account_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_bed59fd791")
   users                 users[]
 
   @@index([account_id], map: "index_clients_on_account_id")
-}
-
-model savings {
-  id         BigInt   @id @default(autoincrement())
-  user_id    BigInt
-  amount     Decimal? @db.Decimal
-  created_at DateTime @db.Timestamp(6)
-  updated_at DateTime @db.Timestamp(6)
-  users      users    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_0a2c60972c")
-
-  @@index([user_id], map: "index_savings_on_user_id")
-}
-
-model savings_withdrawals {
-  id         BigInt   @id @default(autoincrement())
-  user_id    BigInt
-  amount     Decimal? @db.Decimal
-  created_at DateTime @db.Timestamp(6)
-  updated_at DateTime @db.Timestamp(6)
-  users      users    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_ad7d9d4797")
-
-  @@index([user_id], map: "index_savings_withdrawals_on_user_id")
+  @@index([address_id], map: "index_clients_on_address_id")
 }
 
 model schema_migrations {
@@ -124,51 +119,32 @@ model schema_migrations {
 }
 
 model users {
-  id                            BigInt                          @id @default(autoincrement())
-  name                          String?                         @db.VarChar
-  base_salary                   Decimal?                        @db.Decimal
-  account_status                Int?
-  total_withdrawals             Decimal?                        @db.Decimal
-  employee_id                   String?                         @db.VarChar
-  date_of_birth                 DateTime?                       @db.Date
-  back_account_number           String?                         @db.VarChar
-  available_balance             Decimal?                        @db.Decimal
-  next_payment_date             DateTime?                       @db.Date
-  activation_date               DateTime?                       @db.Date
-  received_earlypay             Boolean?
-  savings_balance               Decimal?                        @db.Decimal
-  client_id                     BigInt
-  account_id                    BigInt
-  created_at                    DateTime                        @db.Timestamp(6)
-  updated_at                    DateTime                        @db.Timestamp(6)
-  account_settings              account_settings[]
-  airlipay_balances             airlipay_balances[]
-  early_withdrawal_transactions early_withdrawal_transactions[]
-  savings                       savings[]
-  savings_balances              savings_balances[]
-  savings_transactions          savings_transactions[]
-  savings_withdrawals           savings_withdrawals[]
-  user_banks                    user_banks[]
-  user_mobile_money_accounts    user_mobile_money_accounts[]
-  accounts                      accounts                        @relation(fields: [account_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_61ac11da2b")
-  clients                       clients                         @relation(fields: [client_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_d3559eaf4c")
-  withdrawals                   withdrawals[]
+  id                         BigInt                       @id @default(autoincrement())
+  name                       String?                      @db.VarChar
+  base_salary                Decimal?                     @db.Decimal
+  employee_id                String?                      @db.VarChar
+  date_of_birth              DateTime?                    @db.Date
+  next_payment_date          DateTime?                    @db.Date
+  received_earlypay          Boolean?
+  client_id                  BigInt
+  address_id                 BigInt
+  account_id                 BigInt
+  created_at                 DateTime                     @db.Timestamp(6)
+  updated_at                 DateTime                     @db.Timestamp(6)
+  account_settings           account_settings[]
+  airlipay_balances          airlipay_balances[]
+  early_transactions         early_transactions[]
+  savings_balances           savings_balances[]
+  savings_transactions       savings_transactions[]
+  user_banks                 user_banks[]
+  user_mobile_money_accounts user_mobile_money_accounts[]
+  accounts                   accounts                     @relation(fields: [account_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_61ac11da2b")
+  clients                    clients                      @relation(fields: [client_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_d3559eaf4c")
+  addresses                  addresses                    @relation(fields: [address_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_eb2fc738e4")
 
   @@index([account_id], map: "index_users_on_account_id")
   @@index([client_id], map: "index_users_on_client_id")
-}
-
-model withdrawals {
-  id         BigInt   @id @default(autoincrement())
-  user_id    BigInt
-  amount     Decimal? @db.Decimal
-  charges    Decimal? @db.Decimal
-  status     Int?
-  created_at DateTime @db.Timestamp(6)
-  updated_at DateTime @db.Timestamp(6)
-  users      users    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_75e44d8e7b")
-
-  @@index([user_id], map: "index_withdrawals_on_user_id")
+  @@index([address_id], map: "index_users_on_address_id")
 }
 
 model banks {
@@ -224,7 +200,7 @@ model account_settings {
 model user_mobile_money_accounts {
   id               BigInt             @id @default(autoincrement())
   phone_number     String?            @db.VarChar
-  operator         String?            @db.VarChar
+  operator         operators?
   user_id          BigInt
   created_at       DateTime           @db.Timestamp(6)
   updated_at       DateTime           @db.Timestamp(6)
@@ -235,38 +211,17 @@ model user_mobile_money_accounts {
 }
 
 model airlipay_balances {
-  id                              BigInt                         @id @default(autoincrement())
-  user_id                         BigInt
-  balance                         Float?
-  early_withdrawal_transaction_id BigInt?
-  created_at                      DateTime                       @db.Timestamp(6)
-  updated_at                      DateTime                       @db.Timestamp(6)
-  users                           users                          @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_af9cfa2627")
-  early_withdrawal_transactions   early_withdrawal_transactions? @relation(fields: [early_withdrawal_transaction_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_c04d536a49")
+  id                   BigInt              @id @default(autoincrement())
+  user_id              BigInt
+  balance              Float?
+  early_transaction_id BigInt?
+  created_at           DateTime            @db.Timestamp(6)
+  updated_at           DateTime            @db.Timestamp(6)
+  early_transactions   early_transactions? @relation(fields: [early_transaction_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_67ce807e38")
+  users                users               @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_af9cfa2627")
 
-  @@index([early_withdrawal_transaction_id], map: "index_airlipay_balances_on_early_withdrawal_transaction_id")
   @@index([user_id], map: "index_airlipay_balances_on_user_id")
-}
-
-model early_withdrawal_transactions {
-  id                BigInt              @id @default(autoincrement())
-  user_id           BigInt
-  status            withdrawal_status?
-  transaction_type  transaction_types?  @default(WITHDRAW)
-  initiated_date    DateTime?           @db.Timestamp(6)
-  execution_date    DateTime?           @db.Timestamp(6)
-  amount            Float?
-  fees              Float?
-  new_balance       Float?
-  old_balance       Float?
-  operator          operators?
-  created_at        DateTime            @db.Timestamp(6)
-  updated_at        DateTime            @db.Timestamp(6)
-  phone_number      String?             @db.VarChar
-  airlipay_balances airlipay_balances[]
-  users             users               @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_c1ea1f9510")
-
-  @@index([user_id], map: "index_early_withdrawal_transactions_on_user_id")
+  @@index([early_transaction_id], map: "index_airlipay_balances_on_early_transaction_id")
 }
 
 model savings_balances {
@@ -295,13 +250,34 @@ model savings_transactions {
   new_balance      Float?
   old_balance      Float?
   operator         operators?
+  phone_number     String?            @db.VarChar
   created_at       DateTime           @db.Timestamp(6)
   updated_at       DateTime           @db.Timestamp(6)
-  phone_number     String?            @db.VarChar
   savings_balances savings_balances[]
   users            users              @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_6b026816cc")
 
   @@index([user_id], map: "index_savings_transactions_on_user_id")
+}
+
+model early_transactions {
+  id                BigInt              @id @default(autoincrement())
+  user_id           BigInt
+  status            withdrawal_status?
+  transaction_type  transaction_types?  @default(WITHDRAW)
+  initiated_date    DateTime?           @db.Timestamp(6)
+  execution_date    DateTime?           @db.Timestamp(6)
+  amount            Float?
+  fees              Float?
+  new_balance       Float?
+  old_balance       Float?
+  operator          operators?
+  phone_number      String?             @db.VarChar
+  created_at        DateTime            @db.Timestamp(6)
+  updated_at        DateTime            @db.Timestamp(6)
+  airlipay_balances airlipay_balances[]
+  users             users               @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_08c702b977")
+
+  @@index([user_id], map: "index_early_transactions_on_user_id")
 }
 
 enum transaction_types {
@@ -319,4 +295,18 @@ enum operators {
   ORANGE
   MTN
   UNKNOWN
+}
+
+enum account_status_types {
+  DEACTIVATED
+  ACTIVE
+  PENDING
+  BLOCKED
+  BANNED
+}
+
+enum account_types {
+  ADMIN
+  CLIENT
+  USER
 }

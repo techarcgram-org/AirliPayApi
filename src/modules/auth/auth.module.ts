@@ -13,7 +13,6 @@ import { AppConfigService } from 'src/config/config.service';
 import { AccountSettingsService } from '../account-settings/account-settings.service';
 import { AirlipayBalanceService } from '../airlipay-balance/airlipay-balance.service';
 import { SavingsBalanceService } from '../savings-balance/savings-balance.service';
-import { PaymentService } from 'src/core/payment/payment.service';
 import { PaymentModule } from 'src/core/payment/payment.module';
 
 @Module({
