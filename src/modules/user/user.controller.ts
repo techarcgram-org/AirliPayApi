@@ -71,6 +71,11 @@ export class UsersController {
     return formatResponse(user, res, HttpStatus.OK);
   }
 
+  @Get('/list-banks')
+  async listBanks() {
+    return await this.usersService.listBanks();
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(+id, updateUserDto);

@@ -27,6 +27,7 @@ import { airlipay_balances, early_transactions } from '@prisma/client';
 import { UpdateAirlipayBalanceDto } from './dto/update-airlipay-balance.dto';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import currency from 'currency.js';
+import { ListTransactionDto } from './dto/list-transaction.dto';
 
 @Injectable()
 export class AirlipayBalanceService {
@@ -257,5 +258,38 @@ export class AirlipayBalanceService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+
+  async listWithdrawalTransac(
+    user: UserSession,
+    listTransactionDto: ListTransactionDto,
+  ): Promise<early_transactions[]> {
+    const { status, type, page } = listTransactionDto;
+    let transactions;
+    let where = {};
+    const pageSize = 15;
+    if (user) {
+      where = { ...where, user_id: user.sub };
+    }
+    if (listTransactionDto.status) {
+      where = { ...where, status };
+    }
+    if (listTransactionDto.type) {
+      where = { ...where, transaction_type: type };
+    }
+    try {
+      transactions = this.prismaService.early_transactions.findMany({
+        where,
+        skip: page ? (page - 1) * pageSize : undefined,
+        take: pageSize,
+      });
+    } catch (error) {
+      this.logger.error(`error ${error}`);
+      throw new HttpException(
+        `Server error: ${error}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+    return transactions;
   }
 }

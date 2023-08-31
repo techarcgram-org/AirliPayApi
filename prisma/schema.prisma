@@ -13,7 +13,6 @@ model accounts {
   email                      String                @unique(map: "index_accounts_on_email") @default("") @db.VarChar
   encrypted_password         String                @default("") @db.VarChar
   username                   String?               @db.VarChar
-  phone_number               String?               @db.VarChar
   reset_password_token       String?               @unique(map: "index_accounts_on_reset_password_token") @db.VarChar
   reset_password_sent_at     DateTime?             @db.Timestamp(6)
   remember_created_at        DateTime?             @db.Timestamp(6)
@@ -43,19 +42,18 @@ model accounts {
 }
 
 model addresses {
-  id                  BigInt    @id @default(autoincrement())
-  phone_number        String?   @db.VarChar
-  city                String?   @db.VarChar
-  region              String?   @db.VarChar
-  mobile_money_number String?   @db.VarChar
-  street              String?   @db.VarChar
-  secondery_phone     String?   @db.VarChar
-  created_at          DateTime  @db.Timestamp(6)
-  updated_at          DateTime  @db.Timestamp(6)
-  admins              admins[]
-  banks               banks[]
-  clients             clients[]
-  users               users[]
+  id                     BigInt    @id @default(autoincrement())
+  primary_phone_number   String?   @db.VarChar
+  city                   String?   @db.VarChar
+  region                 String?   @db.VarChar
+  street                 String?   @db.VarChar
+  secondery_phone_number String?   @db.VarChar
+  created_at             DateTime  @db.Timestamp(6)
+  updated_at             DateTime  @db.Timestamp(6)
+  admins                 admins[]
+  banks                  banks[]
+  clients                clients[]
+  users                  users[]
 }
 
 model admins {
@@ -123,7 +121,9 @@ model users {
   name                       String?                      @db.VarChar
   base_salary                Decimal?                     @db.Decimal
   employee_id                String?                      @db.VarChar
-  date_of_birth              DateTime?                    @db.Date
+  dob                        DateTime?                    @db.Date
+  sex                        String?                      @db.VarChar
+  photo                      String?                      @db.VarChar
   next_payment_date          DateTime?                    @db.Date
   received_earlypay          Boolean?
   client_id                  BigInt

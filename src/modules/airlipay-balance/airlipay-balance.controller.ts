@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Res, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Res, UseGuards, Get } from '@nestjs/common';
 import { AirlipayBalanceService } from './airlipay-balance.service';
 
 import { GetUser } from 'src/common/decorators/get-user.decorator';
@@ -6,6 +6,7 @@ import { UserSession } from 'src/common/types/user.type';
 import { WithdrawDto } from './dto/withdraw.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { ListTransactionDto } from './dto/list-transaction.dto';
 
 @Controller('airlipay-balance')
 export class AirlipayBalanceController {
@@ -25,6 +26,20 @@ export class AirlipayBalanceController {
       user,
       withdraw.amount,
       withdraw.phoneNumber,
+    );
+  }
+
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  @Get('/transactions')
+  async listTransactions(
+    @Res({ passthrough: true }) res,
+    @Body() listTransactionDto: ListTransactionDto,
+    @GetUser() user: UserSession,
+  ) {
+    return await this.airlipayBalanceService.listWithdrawalTransac(
+      user,
+      listTransactionDto,
     );
   }
 }

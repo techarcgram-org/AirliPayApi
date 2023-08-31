@@ -15,6 +15,7 @@ import * as moment from 'moment';
 import * as bcrypt from 'bcrypt';
 import { AccountStatus } from 'src/common/constants';
 import { logPrefix } from 'src/common/utils/util';
+import { banks } from '@prisma/client';
 
 @Injectable()
 export class UserService {
@@ -126,6 +127,20 @@ export class UserService {
 
     if (!user) throw new NotFoundException();
     return user;
+  }
+
+  async listBanks(): Promise<banks[]> {
+    let banks: banks[];
+    try {
+      banks = await this.prismaService.banks.findMany();
+    } catch (error) {
+      this.logger.error(`${logPrefix()} ${error}`);
+      throw new HttpException(
+        `server error: ${error}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+    return banks;
   }
 
   async findOneByEmail(email: string): Promise<UserWithAccounts | undefined> {
