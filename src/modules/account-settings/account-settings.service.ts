@@ -7,7 +7,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { UpdateAccountSettingDto } from './dto/update-account-setting.dto';
-import { UserService } from '../user/user.service';
 import { PrismaService } from 'src/common/services/prisma.service';
 import * as moment from 'moment';
 import { AddUserBankAccountDto } from './dto/add-user-bank-account.dto';
@@ -18,17 +17,12 @@ import {
   telecomOperator,
 } from 'src/common/utils/util';
 import { CreateBankDto } from './dto/create-bank.dto';
-import { banks } from '@prisma/client';
-import { AppConfigService } from 'src/config/config.service';
+import { banks, user_mobile_money_accounts } from '@prisma/client';
+import { UserSession } from 'src/common/types/user.type';
 
 @Injectable()
 export class AccountSettingsService {
-  constructor(
-    private userService: UserService,
-    private prismaService: PrismaService,
-    private logger: Logger,
-    private appConfig: AppConfigService,
-  ) {}
+  constructor(private prismaService: PrismaService, private logger: Logger) {}
 
   async create(userID: number) {
     return await this.prismaService.account_settings.create({
@@ -111,7 +105,7 @@ export class AccountSettingsService {
   }
 
   async addUserMobileMoneyAccount(
-    userId: number,
+    user: UserSession,
     addUserMobileMoneyAccount: AddUserMobileMoneyAccountDto,
   ) {
     if (!isValidPhoneNumber(addUserMobileMoneyAccount.phone_number)) {
@@ -122,10 +116,31 @@ export class AccountSettingsService {
       data: {
         ...addUserMobileMoneyAccount,
         operator,
-        user_id: userId,
+        user_id: user.sub,
         created_at: moment().format(),
         updated_at: moment().format(),
       },
     });
+  }
+
+  async listUserMomoAccounts(
+    user: UserSession,
+  ): Promise<user_mobile_money_accounts[]> {
+    let userMomoAccoutns: user_mobile_money_accounts[];
+    try {
+      userMomoAccoutns =
+        await this.prismaService.user_mobile_money_accounts.findMany({
+          where: {
+            user_id: user.sub,
+          },
+        });
+    } catch (error) {
+      this.logger.error(`${logPrefix()} ${error}`);
+      throw new HttpException(
+        `server error: ${error}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+    return userMomoAccoutns;
   }
 }

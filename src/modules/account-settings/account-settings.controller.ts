@@ -93,7 +93,7 @@ export class AccountSettingsController {
     @Body() addUserMobileMoneyAccountDto: AddUserMobileMoneyAccountDto,
   ) {
     const result = await this.accountSettingsService.addUserMobileMoneyAccount(
-      user.sub,
+      user,
       addUserMobileMoneyAccountDto,
     );
     if (!result) {
@@ -102,8 +102,14 @@ export class AccountSettingsController {
     return formatResponse(result, res, HttpStatus.OK);
   }
 
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.accountSettingsService.remove(+id);
-  // }
+  @Get('/list-user-momo-accounts')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  async listMomoAccounts(@Res({ passthrough: true }) res, @GetUser() user) {
+    const result = await this.accountSettingsService.listUserMomoAccounts(user);
+    if (!result) {
+      return formatResponse(result, res, HttpStatus.BAD_REQUEST);
+    }
+    return formatResponse(result, res, HttpStatus.OK);
+  }
 }
