@@ -15,5 +15,5 @@ export class UpdateAirlipayBalanceDto {
     description: 'id of the last transaction that updated the balance',
   })
   @IsNotEmpty()
-  early_withdrawal_transaction_id: bigint;
+  early_transaction_id: bigint;
 }

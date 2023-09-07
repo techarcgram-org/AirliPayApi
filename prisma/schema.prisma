@@ -152,6 +152,7 @@ model banks {
   name         String?      @db.VarChar
   is_partner   Boolean?
   supports_api Boolean?
+  swift        String?      @db.VarChar
   address_id   BigInt
   created_at   DateTime     @db.Timestamp(6)
   updated_at   DateTime     @db.Timestamp(6)

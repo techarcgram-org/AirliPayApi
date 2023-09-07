@@ -10,6 +10,7 @@ import {
   Res,
   HttpStatus,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { formatResponse } from '../../common/lib/helpers';
 import { UserService } from './user.service';
@@ -18,6 +19,10 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { GetUserByEmployeeIdDto } from './dto/getuserbyid.dto';
 import { GetUserByEmailDto } from './dto/getUserByEmail.dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { UserSession } from 'src/common/types/user.type';
+import { GetUser } from 'src/common/decorators/get-user.decorator';
+import { AuthGuard } from '../auth/auth.guard';
 
 @Controller('users')
 export class UsersController {
@@ -74,6 +79,13 @@ export class UsersController {
   @Get('/list-banks')
   async listBanks() {
     return await this.usersService.listBanks();
+  }
+
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  @Get('/list-user-banks')
+  async listUserBanks(@GetUser() user: UserSession) {
+    return await this.usersService.listUserBanks(user);
   }
 
   @Patch(':id')

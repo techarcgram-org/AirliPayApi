@@ -74,7 +74,7 @@ export class AirlipayBalanceService {
       });
     } catch (error) {
       throw new HttpException(
-        `Error updating ailipay balance }`,
+        `Error updating ailipay balance ${error}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -82,30 +82,30 @@ export class AirlipayBalanceService {
   }
 
   async withdraw(user: UserSession, amount: number, phoneNumber: string) {
-    let pendingTransac: early_transactions;
+    // let pendingTransac: early_transactions;
     let earlyBalance: airlipay_balances;
     let transaction: early_transactions;
     let payment;
-    try {
-      pendingTransac = await this.prismaService.early_transactions.findFirst({
-        where: {
-          user_id: user.sub,
-          status: PaymentStatus.PENDING,
-        },
-      });
-    } catch (error) {
-      this.logger.error(`${logPrefix()} ${error}`);
-      throw new HttpException(
-        `error retriving pending transaction`,
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-    if (pendingTransac) {
-      throw new HttpException(
-        `Already existing pending transaction`,
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+    // try {
+    //   pendingTransac = await this.prismaService.early_transactions.findFirst({
+    //     where: {
+    //       user_id: user.sub,
+    //       status: PaymentStatus.PENDING,
+    //     },
+    //   });
+    // } catch (error) {
+    //   this.logger.error(`${logPrefix()} ${error}`);
+    //   throw new HttpException(
+    //     `error retriving pending transaction`,
+    //     HttpStatus.INTERNAL_SERVER_ERROR,
+    //   );
+    // }
+    // if (pendingTransac) {
+    //   throw new HttpException(
+    //     `Already existing pending transaction`,
+    //     HttpStatus.BAD_REQUEST,
+    //   );
+    // }
     try {
       earlyBalance =
         user.sub &&
@@ -141,6 +141,15 @@ export class AirlipayBalanceService {
           updated_at: moment().format(),
         },
       });
+    } catch (error) {
+      this.logger.error(`${logPrefix()} ${error}`);
+      throw new HttpException(
+        `Server error: ${error}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    try {
       payment = await this.paymentService.initTransaction(
         PaymentType.DEPOSIT,
         phoneNumber,
@@ -169,7 +178,7 @@ export class AirlipayBalanceService {
       const airlipayUpdateObject: UpdateAirlipayBalanceDto = {
         id: earlyBalance.id,
         balance: earlyBalance.balance,
-        early_withdrawal_transaction_id: transaction.id,
+        early_transaction_id: transaction.id,
       };
       if (response.status === PaymentStatus.SUCCESS) {
         try {
@@ -185,7 +194,7 @@ export class AirlipayBalanceService {
         } catch (error) {
           this.logger.error(`${logPrefix()} ${error}`);
           throw new HttpException(
-            `Error updating early withdrawal transaction}`,
+            `Error updating early withdrawal transaction ${error}`,
             HttpStatus.INTERNAL_SERVER_ERROR,
           );
         }
@@ -267,7 +276,9 @@ export class AirlipayBalanceService {
     const { status, type, page } = listTransactionDto;
     let transactions;
     let where = {};
-    const pageSize = 15;
+    const pageSize = listTransactionDto.pageSize
+      ? listTransactionDto.pageSize
+      : 15;
     if (user) {
       where = { ...where, user_id: user.sub };
     }

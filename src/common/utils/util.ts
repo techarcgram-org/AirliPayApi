@@ -60,7 +60,14 @@ export const subtractBFromA = (a: number, b: number): number => {
 };
 
 export const formatPhonenumber = (phoneNumber: string) => {
-  const number = phoneNumber.split('237');
-  const result = number[1].match(/.{1,3}/g) ?? [];
+  let number;
+  let result;
+  if (phoneNumber.split('467')) {
+    number = phoneNumber.split('467');
+    result = number[1].match(/.{1,3}/g) ?? [];
+    return `(test) ${result[0]} ${result[1]} ${result[2]}`;
+  }
+  number = phoneNumber.split('237');
+  result = number[1].match(/.{1,3}/g) ?? [];
   return `(+237) ${result[0]} ${result[1]} ${result[2]}`;
 };

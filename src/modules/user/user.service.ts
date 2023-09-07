@@ -8,14 +8,14 @@ import {
 import { gen } from 'n-digit-token';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { UserWithAccounts } from 'src/common/types/user.type';
+import { UserSession, UserWithAccounts } from 'src/common/types/user.type';
 import { PrismaService } from 'src/common/services/prisma.service';
 import { MailService } from 'src/core/mail/mail.service';
 import * as moment from 'moment';
 import * as bcrypt from 'bcrypt';
 import { AccountStatus } from 'src/common/constants';
 import { logPrefix } from 'src/common/utils/util';
-import { banks } from '@prisma/client';
+import { banks, user_banks } from '@prisma/client';
 
 @Injectable()
 export class UserService {
@@ -141,6 +141,31 @@ export class UserService {
       );
     }
     return banks;
+  }
+
+  async listUserBanks(user: UserSession): Promise<any[]> {
+    let userBanks: any[];
+    try {
+      userBanks = await this.prismaService.user_banks.findMany({
+        where: {
+          user_id: user.sub,
+        },
+        include: {
+          banks: {
+            include: {
+              addresses: true,
+            },
+          },
+        },
+      });
+    } catch (error) {
+      this.logger.error(`${logPrefix()} ${error}`);
+      throw new HttpException(
+        `server error: ${error}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+    return userBanks;
   }
 
   async findOneByEmail(email: string): Promise<UserWithAccounts | undefined> {

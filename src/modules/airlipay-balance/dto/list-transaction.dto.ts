@@ -15,9 +15,15 @@ export class ListTransactionDto {
   type: string;
 
   @ApiProperty({
-    type: 'string',
+    type: 'number',
     description:
       'the page number of the transaction you want to retrieve for pagination purposes',
   })
   page: number;
+
+  @ApiProperty({
+    type: 'number',
+    description: 'the number of items to return ',
+  })
+  pageSize: number;
 }
