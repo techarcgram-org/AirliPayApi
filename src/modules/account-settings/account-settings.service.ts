@@ -17,7 +17,11 @@ import {
   telecomOperator,
 } from 'src/common/utils/util';
 import { CreateBankDto } from './dto/create-bank.dto';
-import { banks, user_mobile_money_accounts } from '@prisma/client';
+import {
+  account_settings,
+  banks,
+  user_mobile_money_accounts,
+} from '@prisma/client';
 import { UserSession } from 'src/common/types/user.type';
 
 @Injectable()
@@ -142,5 +146,25 @@ export class AccountSettingsService {
       );
     }
     return userMomoAccoutns;
+  }
+
+  async getUserAccountSettings(user: UserSession): Promise<account_settings> {
+    let userAccountSettings: account_settings;
+    try {
+      userAccountSettings = await this.prismaService.account_settings.findFirst(
+        {
+          where: {
+            user_id: user.sub,
+          },
+        },
+      );
+    } catch (error) {
+      this.logger.error(`${logPrefix()} ${error}`);
+      throw new HttpException(
+        `server error: ${error}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+    return userAccountSettings;
   }
 }

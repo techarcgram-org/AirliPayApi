@@ -112,4 +112,20 @@ export class AccountSettingsController {
     }
     return formatResponse(result, res, HttpStatus.OK);
   }
+
+  @Get('/get-user-account-settings')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  async getUserAccountSettings(
+    @Res({ passthrough: true }) res,
+    @GetUser() user,
+  ) {
+    const result = await this.accountSettingsService.getUserAccountSettings(
+      user,
+    );
+    if (!result) {
+      return formatResponse(result, res, HttpStatus.BAD_REQUEST);
+    }
+    return formatResponse(result, res, HttpStatus.OK);
+  }
 }
