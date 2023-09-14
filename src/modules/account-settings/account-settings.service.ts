@@ -76,9 +76,9 @@ export class AccountSettingsService {
       console.log(error);
       throw new InternalServerErrorException();
     }
-    let user;
+    let settings;
     try {
-      user = await this.prismaService.account_settings.update({
+      settings = await this.prismaService.account_settings.update({
         data: {
           ...updateAccountSettingDto,
           updated_at: moment().format(),
@@ -91,7 +91,7 @@ export class AccountSettingsService {
       console.log(error);
       throw new InternalServerErrorException();
     }
-    return user;
+    return settings;
   }
 
   async addUserBankAccount(

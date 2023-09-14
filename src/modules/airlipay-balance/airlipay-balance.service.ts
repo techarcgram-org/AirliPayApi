@@ -37,6 +37,24 @@ export class AirlipayBalanceService {
     private logger: Logger,
   ) {}
 
+  async getUserBalance(user: UserSession): Promise<airlipay_balances> {
+    let balance: airlipay_balances;
+    try {
+      balance = await this.prismaService.airlipay_balances.findFirst({
+        where: {
+          user_id: user.sub,
+        },
+      });
+    } catch (error) {
+      this.logger.error(`${logPrefix()} ${error}`);
+      throw new HttpException(
+        `Error gettting airlipay balance for user ${error}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+    return balance;
+  }
+
   async create(userId: number): Promise<airlipay_balances> {
     let newBalance: airlipay_balances;
     try {

@@ -31,6 +31,16 @@ export class AirlipayBalanceController {
 
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
+  @Get('/')
+  async getUserBalance(
+    @Res({ passthrough: true }) res,
+    @GetUser() user: UserSession,
+  ) {
+    return await this.airlipayBalanceService.getUserBalance(user);
+  }
+
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
   @Get('/transactions')
   async listTransactions(
     @Res({ passthrough: true }) res,
