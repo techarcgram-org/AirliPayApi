@@ -205,6 +205,7 @@ model user_mobile_money_accounts {
   user_id          BigInt
   created_at       DateTime           @db.Timestamp(6)
   updated_at       DateTime           @db.Timestamp(6)
+  default          Boolean?
   account_settings account_settings[]
   users            users              @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_f3b530b4f3")
 

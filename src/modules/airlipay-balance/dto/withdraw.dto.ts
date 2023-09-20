@@ -13,6 +13,5 @@ export class WithdrawDto {
     type: 'string',
     description: 'phone number to transfer to',
   })
-  @IsNotEmpty()
   phoneNumber: string;
 }

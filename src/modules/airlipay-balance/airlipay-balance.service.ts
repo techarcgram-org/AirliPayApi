@@ -28,6 +28,7 @@ import { UpdateAirlipayBalanceDto } from './dto/update-airlipay-balance.dto';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import currency from 'currency.js';
 import { ListTransactionDto } from './dto/list-transaction.dto';
+import { IsPhoneNumber } from 'class-validator';
 
 @Injectable()
 export class AirlipayBalanceService {
@@ -100,6 +101,16 @@ export class AirlipayBalanceService {
   }
 
   async withdraw(user: UserSession, amount: number, phoneNumber: string) {
+    if (!phoneNumber) {
+      const momo =
+        await this.prismaService.user_mobile_money_accounts.findFirst({
+          where: {
+            user_id: user.sub,
+            default: true,
+          },
+        });
+      phoneNumber = momo.phone_number;
+    }
     // let pendingTransac: early_transactions;
     let earlyBalance: airlipay_balances;
     let transaction: early_transactions;
@@ -152,7 +163,7 @@ export class AirlipayBalanceService {
           amount: toAirliPayMoney(amount),
           fees: 0,
           operator: telecomOperator(phoneNumber),
-          phone_number: formatPhonenumber(phoneNumber),
+          phone_number: phoneNumber,
           new_balance: subtractBFromA(earlyBalance.balance, amount),
           old_balance: earlyBalance.balance,
           created_at: moment().format(),

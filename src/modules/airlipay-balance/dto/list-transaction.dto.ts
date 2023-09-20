@@ -10,7 +10,8 @@ export class ListTransactionDto {
 
   @ApiProperty({
     type: 'string',
-    description: 'the type of transaction you want to retrieve',
+    description:
+      'the type of transaction you want to retrieve either DEPOSIT or WITHDRAWAL',
   })
   type: string;
 
