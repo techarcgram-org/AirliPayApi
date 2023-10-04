@@ -14,6 +14,7 @@ import { AccountSettingsService } from '../account-settings/account-settings.ser
 import { AirlipayBalanceService } from '../airlipay-balance/airlipay-balance.service';
 import { SavingsBalanceService } from '../savings-balance/savings-balance.service';
 import { PaymentModule } from 'src/core/payment/payment.module';
+import { PusherService } from 'src/core/pusher/pusher.service';
 
 @Module({
   providers: [
@@ -26,6 +27,7 @@ import { PaymentModule } from 'src/core/payment/payment.module';
     AccountSettingsService,
     AirlipayBalanceService,
     SavingsBalanceService,
+    PusherService,
   ],
   imports: [
     AppConfigModule,

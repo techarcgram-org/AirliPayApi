@@ -5,6 +5,7 @@ import { UserModule } from '../user/user.module';
 import { UserService } from '../user/user.service';
 import { PrismaService } from 'src/common/services/prisma.service';
 import { AppConfigModule } from 'src/config/config.module';
+import { AppConfigService } from 'src/config/config.service';
 
 @Module({
   imports: [UserModule, AppConfigModule],

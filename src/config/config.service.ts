@@ -5,6 +5,7 @@ import { DbConnectionConfig } from './db.config';
 import { JWTConfig } from './jwt.config';
 import { AppConfig } from './app.config';
 import { MtnConfig } from './mtn.config';
+import { PusherConfig } from './pusher.config';
 
 @Injectable()
 export class AppConfigService {
@@ -86,5 +87,15 @@ export class AppConfigService {
       password,
       from,
     };
+  }
+
+  get pusher(): PusherConfig {
+    const key = this.configService.get<string>('pusher.key');
+    const wsHost = this.configService.get<string>('pusher.wsHost');
+    const secret = this.configService.get<string>('pusher.secret');
+    const appId = this.configService.get<string>('pusher.appId');
+    const useTLS = this.configService.get<boolean>('pusher.useTLS', true);
+    const cluster = this.configService.get<string>('pusher.cluster');
+    return { key, wsHost, secret, appId, useTLS, cluster };
   }
 }

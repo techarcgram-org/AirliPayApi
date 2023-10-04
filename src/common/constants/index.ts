@@ -51,3 +51,14 @@ export const TestNumbers = [
   '46733123453',
   '46733123454',
 ];
+
+export enum PusherEvents {
+  EARLYPAY_TOPUP_SUCCESS = 'EARLYPAY_TOPUP_SUCCESS',
+}
+
+export enum PusherChannels {
+  PAYMENT_SUCCESS = 'payment-success',
+  PAYMENT_FAILED = 'payment-failed',
+  NOTIFICATION = 'notification',
+  CHAT = 'chat',
+}

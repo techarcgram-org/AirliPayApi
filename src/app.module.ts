@@ -9,6 +9,7 @@ import { AirlipayBalanceModule } from './modules/airlipay-balance/airlipay-balan
 import { SavingsBalanceModule } from './modules/savings-balance/savings-balance.module';
 import { AppConfigModule } from './config/config.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { PusherModule } from './core/pusher/pusher.module';
 @Module({
   imports: [
     AppConfigModule,
@@ -18,6 +19,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     AccountSettingsModule,
     AirlipayBalanceModule,
     SavingsBalanceModule,
+    PusherModule,
     ScheduleModule.forRoot(),
   ],
   controllers: [AppController],

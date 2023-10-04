@@ -20,6 +20,8 @@ import {
 import {
   PaymentStatus,
   PaymentType,
+  PusherChannels,
+  PusherEvents,
   TransactionType,
 } from 'src/common/constants';
 import * as moment from 'moment';
@@ -29,6 +31,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import currency from 'currency.js';
 import { ListTransactionDto } from './dto/list-transaction.dto';
 import { IsPhoneNumber } from 'class-validator';
+import { PusherService } from 'src/core/pusher/pusher.service';
 
 @Injectable()
 export class AirlipayBalanceService {
@@ -36,6 +39,7 @@ export class AirlipayBalanceService {
     private prismaService: PrismaService,
     private paymentService: PaymentService,
     private logger: Logger,
+    private pusherService: PusherService,
   ) {}
 
   async getUserBalance(user: UserSession): Promise<airlipay_balances> {
@@ -251,6 +255,41 @@ export class AirlipayBalanceService {
     return transaction;
   }
 
+  async listWithdrawalTransac(
+    user: UserSession,
+    listTransactionDto: ListTransactionDto,
+  ): Promise<early_transactions[]> {
+    const { status, type, page } = listTransactionDto;
+    let transactions;
+    let where = {};
+    const pageSize = listTransactionDto.pageSize
+      ? listTransactionDto.pageSize
+      : 15;
+    if (user) {
+      where = { ...where, user_id: user.sub };
+    }
+    if (listTransactionDto.status) {
+      where = { ...where, status };
+    }
+    if (listTransactionDto.type) {
+      where = { ...where, transaction_type: type };
+    }
+    try {
+      transactions = this.prismaService.early_transactions.findMany({
+        where,
+        skip: page ? (page - 1) * pageSize : undefined,
+        take: pageSize,
+      });
+    } catch (error) {
+      this.logger.error(`error ${error}`);
+      throw new HttpException(
+        `Server error: ${error}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+    return transactions;
+  }
+
   // @Cron(CronExpression.EVERY_HOUR)
   @Cron('0 0 */1 * * 1-5')
   async updateBalance() {
@@ -287,6 +326,23 @@ export class AirlipayBalanceService {
               updated_at: moment().format(),
             },
           });
+          try {
+            const channel = PusherChannels.PAYMENT_SUCCESS + `-${user.id}`;
+            const data = {
+              amount: biHourlyPay,
+              user: user.id,
+              type: PusherEvents.EARLYPAY_TOPUP_SUCCESS,
+            };
+            await this.pusherService.trigger(
+              'my-channel',
+              PusherEvents.EARLYPAY_TOPUP_SUCCESS,
+              data,
+            );
+          } catch (error) {
+            this.logger.debug(
+              `Failed to trigger pusher event: ${error?.message}`,
+            );
+          }
         }
       });
     } catch (error) {
@@ -296,40 +352,5 @@ export class AirlipayBalanceService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-  }
-
-  async listWithdrawalTransac(
-    user: UserSession,
-    listTransactionDto: ListTransactionDto,
-  ): Promise<early_transactions[]> {
-    const { status, type, page } = listTransactionDto;
-    let transactions;
-    let where = {};
-    const pageSize = listTransactionDto.pageSize
-      ? listTransactionDto.pageSize
-      : 15;
-    if (user) {
-      where = { ...where, user_id: user.sub };
-    }
-    if (listTransactionDto.status) {
-      where = { ...where, status };
-    }
-    if (listTransactionDto.type) {
-      where = { ...where, transaction_type: type };
-    }
-    try {
-      transactions = this.prismaService.early_transactions.findMany({
-        where,
-        skip: page ? (page - 1) * pageSize : undefined,
-        take: pageSize,
-      });
-    } catch (error) {
-      this.logger.error(`error ${error}`);
-      throw new HttpException(
-        `Server error: ${error}`,
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-    return transactions;
   }
 }
