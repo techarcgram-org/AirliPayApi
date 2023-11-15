@@ -7,6 +7,7 @@ import { WithdrawDto } from './dto/withdraw.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { ListTransactionDto } from './dto/list-transaction.dto';
+import { ACGuard, UseRoles, UserRoles } from 'nest-access-control';
 
 @Controller('airlipay-balance')
 export class AirlipayBalanceController {
@@ -29,13 +30,20 @@ export class AirlipayBalanceController {
     );
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, ACGuard)
   @ApiBearerAuth()
+  @UseRoles({
+    resource: 'employeeData',
+    action: 'read',
+    possession: 'any',
+  })
   @Get('/')
   async getUserBalance(
+    @UserRoles() userRoles: any,
     @Res({ passthrough: true }) res,
     @GetUser() user: UserSession,
   ) {
+    console.log('USERROLES', userRoles);
     return await this.airlipayBalanceService.getUserBalance(user);
   }
 

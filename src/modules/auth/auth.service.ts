@@ -1,41 +1,61 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { MailService } from '../../core/mail/mail.service';
-import { UserService } from 'src/modules/user/user.service';
+import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { UserWithAccounts } from 'src/common/types/user.type';
 import { AccountStatus } from 'src/common/constants';
+import { PrismaService } from 'src/common/services/prisma.service';
+import { logPrefix } from 'src/common/utils/util';
+import { accounts } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private mailService: MailService,
-    private userService: UserService,
     private readonly jwtService: JwtService,
+    private readonly prismaService: PrismaService,
+    private logger: Logger,
   ) {}
 
   async validateUser(username: string, password: string): Promise<any> {
-    const user = await this.userService.findOneByEmail(username);
+    const account = await this.prismaService.accounts.findFirst({
+      where: {
+        email: username,
+      },
+      include: {
+        users: true,
+        clients: true,
+        admins: true,
+      },
+    });
     if (
-      user &&
-      bcrypt.compareSync(password, user.accounts.encrypted_password) &&
-      user.accounts.account_status === AccountStatus.ACTIVE
+      account &&
+      bcrypt.compareSync(password, account.encrypted_password) &&
+      account.account_status === AccountStatus.ACTIVE
     ) {
       // const { encrypted_password, ...result } = user;
-      user['accounts']['encrypted_password'] = null;
-      return user;
+      account['encrypted_password'] = null;
+      return account;
     }
+    this.logger.error(`${logPrefix()} ${'error loggin in'}`);
     throw new UnauthorizedException();
   }
 
-  async login(user: UserWithAccounts, remember: boolean) {
-    const payload = { username: user.accounts.email, sub: user.id };
-    delete user['accounts']['encrypted_password'];
+  async login(account: any, remember: boolean) {
+    const sub =
+      account.clients.length === 1
+        ? account.clients[0].id
+        : account.users.length === 1
+        ? account.users[0].id
+        : account.admins[0].id;
+    const payload = {
+      username: account.email,
+      sub: sub,
+      roles: account.roles,
+    };
+    delete account['encrypted_password'];
     return {
       access_token: remember
         ? this.jwtService.sign(payload, { expiresIn: '60d' })
         : this.jwtService.sign(payload, { expiresIn: '1d' }),
-      data: user,
+      data: account,
     };
   }
 
