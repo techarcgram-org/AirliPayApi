@@ -4,7 +4,6 @@ import { AirlipayBalanceController } from './airlipay-balance.controller';
 import { PrismaService } from 'src/common/services/prisma.service';
 import { PaymentModule } from 'src/core/payment/payment.module';
 import { PusherService } from 'src/core/pusher/pusher.service';
-import { AppConfigService } from 'src/config/config.service';
 import { AppConfigModule } from 'src/config/config.module';
 
 @Module({

@@ -62,3 +62,9 @@ export enum PusherChannels {
   NOTIFICATION = 'notification',
   CHAT = 'chat',
 }
+
+export enum Role {
+  USER = 'USER',
+  ADMIN = 'ADMIN',
+  CLIENT = 'CLIENT',
+}

@@ -10,6 +10,8 @@ import { SavingsBalanceModule } from './modules/savings-balance/savings-balance.
 import { AppConfigModule } from './config/config.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { PusherModule } from './core/pusher/pusher.module';
+import { AccessControlModule } from 'nest-access-control';
+import { RBAC_POLICY } from './modules/auth/rbac-policy';
 @Module({
   imports: [
     AppConfigModule,
@@ -21,6 +23,7 @@ import { PusherModule } from './core/pusher/pusher.module';
     SavingsBalanceModule,
     PusherModule,
     ScheduleModule.forRoot(),
+    AccessControlModule.forRoles(RBAC_POLICY),
   ],
   controllers: [AppController],
   providers: [AppService],

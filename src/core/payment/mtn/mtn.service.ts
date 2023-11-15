@@ -99,7 +99,6 @@ export class MtnService {
   async getAccountBalance() {
     const { baseUrl, targetEnvironment } = this.appConfig.mtn;
     const subscriptionKey = this.getSubscriptionKey(PaymentType.REQUEST);
-    console.log('SUB KEY', subscriptionKey);
     let accessToken: any;
     try {
       accessToken = await getAccessToken(
