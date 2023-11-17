@@ -25,7 +25,7 @@ import { AppConfigService } from 'src/config/config.service';
           },
         },
         defaults: {
-          from: `"No Reply" <${process.env.MAIL_FROM}>`,
+          from: `"AirliPay" <${process.env.MAIL_FROM}>`,
         },
         template: {
           dir: join(__dirname, '/templates'),

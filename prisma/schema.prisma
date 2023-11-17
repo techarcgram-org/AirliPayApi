@@ -93,7 +93,7 @@ model client_payments {
 model clients {
   id                    BigInt            @id @default(autoincrement())
   name                  String?           @db.VarChar
-  industry              Int?
+  industry              String?
   tax_id                String?           @db.VarChar
   client_commision      Int?
   earning_report_status Boolean?
