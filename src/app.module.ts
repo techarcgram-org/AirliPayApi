@@ -12,6 +12,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { PusherModule } from './core/pusher/pusher.module';
 import { AccessControlModule } from 'nest-access-control';
 import { RBAC_POLICY } from './modules/auth/rbac-policy';
+import { ClientModule } from './modules/client/client.module';
 @Module({
   imports: [
     AppConfigModule,
@@ -24,6 +25,7 @@ import { RBAC_POLICY } from './modules/auth/rbac-policy';
     PusherModule,
     ScheduleModule.forRoot(),
     AccessControlModule.forRoles(RBAC_POLICY),
+    ClientModule,
   ],
   controllers: [AppController],
   providers: [AppService],

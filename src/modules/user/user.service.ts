@@ -12,15 +12,12 @@ import { UserSession, UserWithAccounts } from 'src/common/types/user.type';
 import { PrismaService } from 'src/common/services/prisma.service';
 import { MailService } from 'src/core/mail/mail.service';
 import * as moment from 'moment';
-import * as bcrypt from 'bcrypt';
 import { AccountStatus } from 'src/common/constants';
-import { logPrefix } from 'src/common/utils/util';
+import { generatePasswordHash, logPrefix } from 'src/common/utils/util';
 import { banks, user_banks } from '@prisma/client';
 
 @Injectable()
 export class UserService {
-  private saltRounds = 12;
-
   constructor(
     private readonly prismaService: PrismaService,
     private mailService: MailService,
@@ -195,7 +192,7 @@ export class UserService {
   }
 
   async createPassword(password: string, user: UserWithAccounts) {
-    const hashedPassword = this.generatePasswordHash(password);
+    const hashedPassword = generatePasswordHash(password);
     try {
       await this.prismaService.accounts.update({
         where: {
@@ -291,15 +288,5 @@ export class UserService {
 
   remove(id: number) {
     return `This action removes a #${id} user`;
-  }
-
-  generatePasswordHash(password: string): string {
-    const salt = bcrypt.genSaltSync(this.saltRounds);
-    const hash = bcrypt.hashSync(password, salt);
-    return hash;
-  }
-
-  verifyPassword(password: string, hash: string): boolean {
-    return bcrypt.compareSync(password, hash);
   }
 }

@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import * as multer from 'multer';
 
 import { AppModule } from './app.module';
 import 'src/common/lib/bingint';

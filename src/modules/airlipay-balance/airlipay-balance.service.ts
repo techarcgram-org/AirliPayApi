@@ -54,7 +54,7 @@ export class AirlipayBalanceService {
       this.logger.error(`${logPrefix()} ${error}`);
       throw new HttpException(
         `Error gettting airlipay balance for user ${error}`,
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.NOT_FOUND,
       );
     }
     return balance;
