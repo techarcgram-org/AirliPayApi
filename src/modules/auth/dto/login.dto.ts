@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class LoginDto {
   @ApiProperty({
@@ -23,5 +24,6 @@ export class LoginDto {
     description: 'remember me bolean',
   })
   @IsBoolean()
+  @Transform(({ value }) => value === 'true')
   remember: boolean;
 }
