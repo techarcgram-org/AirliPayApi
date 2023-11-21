@@ -38,6 +38,7 @@ export class ClientController {
     @UploadedFile() file: Express.Multer.File,
     @Body() createClientDto: CreateClientDto,
   ) {
+    console.log(file);
     return this.clientService.create(createClientDto, file);
   }
 

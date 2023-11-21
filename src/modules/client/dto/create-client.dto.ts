@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class CreateClientDto {
   @ApiProperty({
@@ -18,43 +19,44 @@ export class CreateClientDto {
     type: 'string',
     description: 'TaxId of client/employer',
   })
-  tax_id: string;
+  taxId: string;
 
   @ApiProperty({
     type: 'int',
     description: 'client/employer commision to be earned from payments',
   })
-  client_commision: string;
+  clientCommision: number;
 
   @ApiProperty({
     type: 'boolean',
     description: 'client/employer empplyees earning report status',
   })
-  earning_report_status: boolean;
+  @Transform(({ value }) => value === 'true')
+  earningReportStatus: boolean;
 
   @ApiProperty({
     type: 'string',
     description: 'client/employer next date of payment',
   })
-  next_payment_date: string;
+  nextPaymentDate: string;
 
   @ApiProperty({
     type: 'string',
     description: 'client/employer list of employees file in CSV format',
   })
-  employee_roaster_file: string;
+  file: string;
 
   @ApiProperty({
     type: 'string',
     description: "client/employer's bank name",
   })
-  bank_name: string;
+  bank: string;
 
   @ApiProperty({
     type: 'string',
     description: 'client/employer list of employees file in CSV format',
   })
-  account_number: string;
+  bankdAccountNumber: string;
 
   @ApiProperty({
     type: 'string',
@@ -66,7 +68,7 @@ export class CreateClientDto {
     type: 'string',
     description: 'client/employer email address - also used for authentication',
   })
-  primary_phone_number: string;
+  primaryPhone: string;
 
   @ApiProperty({
     type: 'string',
@@ -90,11 +92,17 @@ export class CreateClientDto {
     type: 'string',
     description: 'client/employer email address - also used for authentication',
   })
-  mobile_money_number: string;
+  mobileMoneyNumber: string;
 
   @ApiProperty({
     type: 'string',
     description: 'client/employer email address - also used for authentication',
   })
-  secondery_phone_number: string;
+  secondaryPhone: string;
+
+  @ApiProperty({
+    type: 'string',
+    description: 'client/employer password',
+  })
+  password: string;
 }
