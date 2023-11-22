@@ -12,8 +12,12 @@ import { UserSession, UserWithAccounts } from 'src/common/types/user.type';
 import { PrismaService } from 'src/common/services/prisma.service';
 import { MailService } from 'src/core/mail/mail.service';
 import * as moment from 'moment';
-import { AccountStatus } from 'src/common/constants';
-import { generatePasswordHash, logPrefix } from 'src/common/utils/util';
+import { AccountStatus, Role } from 'src/common/constants';
+import {
+  constructUsersArrayFromCsv,
+  generatePasswordHash,
+  logPrefix,
+} from 'src/common/utils/util';
 import { banks, user_banks } from '@prisma/client';
 
 @Injectable()
@@ -24,8 +28,161 @@ export class UserService {
     private logger: Logger,
   ) {}
 
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+  async create(createUserDto: CreateUserDto) {
+    let user;
+    try {
+      const client = await this.prismaService.clients.findFirst({
+        where: {
+          id: createUserDto.clientId,
+        },
+      });
+      const random = (Math.random() + 1).toString(36).substring(4);
+      const employee_id =
+        client.name.toLocaleLowerCase().slice(0, 2) +
+        user.name.toLocaleLowerCase().slice(0, 2) +
+        random;
+      user = await this.prismaService.users.create({
+        data: {
+          name: createUserDto.name,
+          base_salary: createUserDto.baseSalary,
+          employee_id: employee_id,
+          clients: {
+            connect: {
+              id: createUserDto.clientId,
+            },
+          },
+          accounts: {
+            create: {
+              email: createUserDto.email,
+              account_type: Role.USER,
+              created_at: moment().format(),
+              updated_at: moment().format(),
+            },
+          },
+          addresses: {
+            create: {
+              city: createUserDto.city,
+              region: createUserDto.region,
+              street: createUserDto.street,
+              primary_phone_number: createUserDto.primaryPhone,
+              secondery_phone_number: createUserDto.seconddaryPhone,
+              created_at: moment().format(),
+              updated_at: moment().format(),
+            },
+          },
+          created_at: moment().format(),
+          updated_at: moment().format(),
+        },
+      });
+    } catch (error) {
+      this.logger.error(`${logPrefix()} ${error}`);
+      throw new HttpException(
+        `Error creating user: ${error}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    try {
+      await this.mailService.sendMail({
+        to: user.email,
+        subject: 'Welcome to AiliPay App!',
+        template: 'welcome',
+        context: {
+          name: user.name,
+          employee_id: user.employee_id,
+        },
+      });
+    } catch (error) {
+      this.logger.error(`${logPrefix()} ${error}`);
+      throw new HttpException(
+        `Error sending email: ${error}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    return user;
+  }
+
+  // adds bulk list of users using csv file
+  async bulkCreate(file: Express.Multer.File, clientId: number) {
+    const users = await constructUsersArrayFromCsv(file);
+    let userList;
+    const client = await this.prismaService.clients.findFirst({
+      where: {
+        id: clientId,
+      },
+    });
+
+    users.forEach(async (user) => {
+      try {
+        const random = (Math.random() + 1).toString(36).substring(4);
+        const employee_id =
+          client.name.toLocaleLowerCase().slice(0, 2) +
+          user.name.toLocaleLowerCase().slice(0, 2) +
+          random;
+        userList.push(
+          await this.prismaService.users.create({
+            data: {
+              name: user.name,
+              base_salary: user.baseSalary,
+              employee_id: employee_id,
+              clients: {
+                connect: {
+                  id: clientId,
+                },
+              },
+              accounts: {
+                create: {
+                  email: user.email,
+                  account_type: Role.USER,
+                  created_at: moment().format(),
+                  updated_at: moment().format(),
+                },
+              },
+              addresses: {
+                create: {
+                  primary_phone_number: user.phoneNumber,
+                  secondery_phone_number: user.secondaryPhone,
+                  city: user.city,
+                  region: user.region,
+                  street: user.street,
+                  created_at: moment().format(),
+                  updated_at: moment().format(),
+                },
+              },
+              created_at: moment().format(),
+              updated_at: moment().format(),
+            },
+          }),
+        );
+      } catch (error) {
+        this.logger.error(`${logPrefix()} ${error}`);
+        throw new HttpException(
+          `Error creating user: ${error}`,
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+
+      try {
+        await this.mailService.sendMail({
+          to: user.email,
+          subject: 'Welcome to AiliPay App!',
+          template: 'welcome',
+          context: {
+            name: user.name,
+            employee_id: user.employee_id,
+          },
+        });
+      } catch (error) {
+        this.logger.error(`${logPrefix()} ${error}`);
+        throw new HttpException(
+          `Error sending email: ${error}`,
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+    });
+
+    return userList;
   }
 
   findAll() {

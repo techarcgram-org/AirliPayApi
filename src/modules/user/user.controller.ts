@@ -11,6 +11,8 @@ import {
   HttpStatus,
   Query,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { formatResponse } from '../../common/lib/helpers';
 import { UserService } from './user.service';
@@ -23,6 +25,10 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 import { UserSession } from 'src/common/types/user.type';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { AuthGuard } from '../auth/auth.guard';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { csvFileFilter, csvFileName } from 'src/common/utils/util';
+import { BuldCreateUserDto } from './dto/bulk-create-user.dto';
 
 @Controller('users')
 export class UsersController {
@@ -31,6 +37,23 @@ export class UsersController {
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
+  }
+
+  @Post('/bulkCreate')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads/employee-roasters',
+        filename: csvFileName,
+      }),
+      fileFilter: csvFileFilter,
+    }),
+  )
+  bulkCreate(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() bulkUserDto: BuldCreateUserDto,
+  ) {
+    return this.usersService.bulkCreate(file, bulkUserDto.clientId);
   }
 
   // @Get()

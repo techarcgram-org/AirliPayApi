@@ -72,13 +72,6 @@ export class ClientService {
           HttpStatus.BAD_REQUEST,
         );
       }
-      // else {
-      //   this.logger.error(`${logPrefix()} ${error}`);
-      //   throw new HttpException(
-      //     `server error: ${error}`,
-      //     HttpStatus.INTERNAL_SERVER_ERROR,
-      //   );
-      // }
     }
     // Creates account for every user from employee roaster csv
     if (file) {
