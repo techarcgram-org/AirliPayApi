@@ -46,6 +46,9 @@ export class UserService {
           name: createUserDto.name,
           base_salary: createUserDto.baseSalary,
           employee_id: employee_id,
+          sex: createUserDto.sex,
+          photo: createUserDto.photo,
+          dob: moment(user.dob, 'DD/MM/YYY').format(),
           clients: {
             connect: {
               id: createUserDto.clientId,
@@ -126,6 +129,9 @@ export class UserService {
               name: user.name,
               base_salary: user.baseSalary,
               employee_id: employee_id,
+              sex: user.sex,
+              photo: user.photo,
+              dob: user.dob,
               clients: {
                 connect: {
                   id: clientId,

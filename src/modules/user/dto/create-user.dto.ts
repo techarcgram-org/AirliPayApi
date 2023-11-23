@@ -46,8 +46,6 @@ export class CreateUserDto {
     type: 'string',
     description: 'Picture of employee',
   })
-  @IsNotEmpty()
-  @IsString()
   photo: string;
 
   @ApiProperty({
@@ -94,7 +92,6 @@ export class CreateUserDto {
     type: 'string',
     description: 'Employees secondary phone',
   })
-  @IsNotEmpty()
   @IsString()
   seconddaryPhone: string;
 }

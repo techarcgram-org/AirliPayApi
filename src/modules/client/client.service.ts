@@ -86,6 +86,8 @@ export class ClientService {
           data: {
             name: user.name,
             base_salary: user.base_salary,
+            sex: user.sex,
+            photo: user.photo,
             dob: moment(user.dob, 'DD/MM/YYY').format(),
             employee_id: employee_id,
             clients: {
