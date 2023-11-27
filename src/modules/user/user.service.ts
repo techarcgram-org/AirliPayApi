@@ -18,7 +18,7 @@ import {
   generatePasswordHash,
   logPrefix,
 } from 'src/common/utils/util';
-import { banks, user_banks } from '@prisma/client';
+import { Prisma, banks, user_banks } from '@prisma/client';
 
 @Injectable()
 export class UserService {
@@ -30,16 +30,18 @@ export class UserService {
 
   async create(createUserDto: CreateUserDto) {
     let user;
+    let employee_id;
+    let client;
     try {
-      const client = await this.prismaService.clients.findFirst({
+      client = await this.prismaService.clients.findFirst({
         where: {
           id: createUserDto.clientId,
         },
       });
       const random = (Math.random() + 1).toString(36).substring(4);
-      const employee_id =
+      employee_id =
         client.name.toLocaleLowerCase().slice(0, 2) +
-        user.name.toLocaleLowerCase().slice(0, 2) +
+        createUserDto.name.toLocaleLowerCase().slice(0, 2) +
         random;
       user = await this.prismaService.users.create({
         data: {
@@ -48,7 +50,7 @@ export class UserService {
           employee_id: employee_id,
           sex: createUserDto.sex,
           photo: createUserDto.photo,
-          dob: moment(user.dob, 'DD/MM/YYY').format(),
+          dob: moment(createUserDto.dob, 'DD/MM/YYY').format(),
           clients: {
             connect: {
               id: createUserDto.clientId,
@@ -78,21 +80,33 @@ export class UserService {
         },
       });
     } catch (error) {
-      this.logger.error(`${logPrefix()} ${error}`);
-      throw new HttpException(
-        `Error creating user: ${error}`,
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        this.logger.error(`${logPrefix()} ${error.message}`);
+        // Handle the error, e.g., send a response to the client
+        throw new HttpException(
+          'Username or email already exists.',
+          HttpStatus.BAD_REQUEST,
+        );
+      } else {
+        this.logger.error(`${logPrefix()} ${error}`);
+        throw new HttpException(
+          `Error creating user: ${error}`,
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
     }
 
     try {
       await this.mailService.sendMail({
-        to: user.email,
+        to: createUserDto.email,
         subject: 'Welcome to AiliPay App!',
         template: 'welcome',
         context: {
           name: user.name,
-          employee_id: user.employee_id,
+          employee_id: employee_id,
         },
       });
     } catch (error) {
@@ -109,84 +123,98 @@ export class UserService {
   // adds bulk list of users using csv file
   async bulkCreate(file: Express.Multer.File, clientId: number) {
     const users = await constructUsersArrayFromCsv(file);
-    let userList;
+    const userList = [];
     const client = await this.prismaService.clients.findFirst({
       where: {
         id: clientId,
       },
     });
 
-    users.forEach(async (user) => {
-      try {
-        const random = (Math.random() + 1).toString(36).substring(4);
-        const employee_id =
-          client.name.toLocaleLowerCase().slice(0, 2) +
-          user.name.toLocaleLowerCase().slice(0, 2) +
-          random;
-        userList.push(
-          await this.prismaService.users.create({
-            data: {
-              name: user.name,
-              base_salary: user.baseSalary,
-              employee_id: employee_id,
-              sex: user.sex,
-              photo: user.photo,
-              dob: user.dob,
-              clients: {
-                connect: {
-                  id: clientId,
+    await Promise.all(
+      users.map(async (user) => {
+        try {
+          const random = (Math.random() + 1).toString(36).substring(4);
+          const employee_id =
+            client.name.toLocaleLowerCase().slice(0, 2) +
+            user.name.toLocaleLowerCase().slice(0, 2) +
+            random;
+          userList.push(
+            await this.prismaService.users.create({
+              data: {
+                name: user.name,
+                base_salary: user.baseSalary,
+                employee_id: employee_id,
+                sex: user.sex,
+                photo: user.photo,
+                dob: moment(user.dob, 'DD/MM/YYY').format(),
+                clients: {
+                  connect: {
+                    id: clientId,
+                  },
                 },
-              },
-              accounts: {
-                create: {
-                  email: user.email,
-                  account_type: Role.USER,
-                  created_at: moment().format(),
-                  updated_at: moment().format(),
+                accounts: {
+                  create: {
+                    email: user.email,
+                    account_type: Role.USER,
+                    created_at: moment().format(),
+                    updated_at: moment().format(),
+                  },
                 },
-              },
-              addresses: {
-                create: {
-                  primary_phone_number: user.phoneNumber,
-                  secondery_phone_number: user.secondaryPhone,
-                  city: user.city,
-                  region: user.region,
-                  street: user.street,
-                  created_at: moment().format(),
-                  updated_at: moment().format(),
+                addresses: {
+                  create: {
+                    primary_phone_number: user.phoneNumber,
+                    secondery_phone_number: user.secondaryPhone,
+                    city: user.city,
+                    region: user.region,
+                    street: user.street,
+                    created_at: moment().format(),
+                    updated_at: moment().format(),
+                  },
                 },
+                created_at: moment().format(),
+                updated_at: moment().format(),
               },
-              created_at: moment().format(),
-              updated_at: moment().format(),
-            },
-          }),
-        );
-      } catch (error) {
-        this.logger.error(`${logPrefix()} ${error}`);
-        throw new HttpException(
-          `Error creating user: ${error}`,
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
+            }),
+          );
+        } catch (error) {
+          if (
+            error instanceof Prisma.PrismaClientKnownRequestError &&
+            error.code === 'P2002'
+          ) {
+            this.logger.error(`${logPrefix()} ${error.message}`);
+            // Handle the error, e.g., send a response to the client
+            throw new HttpException(
+              'Username or email already exists.',
+              HttpStatus.BAD_REQUEST,
+            );
+          } else {
+            this.logger.error(`${logPrefix()} ${error}`);
+            throw new HttpException(
+              `Error creating user: ${error}`,
+              HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+          }
+        }
 
-      try {
-        await this.mailService.sendMail({
-          to: user.email,
-          subject: 'Welcome to AiliPay App!',
-          template: 'welcome',
-          context: {
-            name: user.name,
-            employee_id: user.employee_id,
-          },
-        });
-      } catch (error) {
-        this.logger.error(`${logPrefix()} ${error}`);
-        throw new HttpException(
-          `Error sending email: ${error}`,
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
-    });
+        try {
+          await this.mailService.sendMail({
+            to: user.email,
+            subject: 'Welcome to AiliPay App!',
+            template: 'welcome',
+            context: {
+              name: user.name,
+              employee_id: user.employee_id,
+            },
+          });
+        } catch (error) {
+          this.logger.error(`${logPrefix()} ${error}`);
+          throw new HttpException(
+            `Error sending email: ${error}`,
+            HttpStatus.INTERNAL_SERVER_ERROR,
+          );
+        }
+      }),
+    );
 
     return userList;
   }
@@ -445,8 +473,68 @@ export class UserService {
     return now > emailConfirmDatePlusOneHour;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: number, updateUserDto: UpdateUserDto) {
+    console.log(updateUserDto, id);
+    let updatedUserData;
+    try {
+      if (updateUserDto.userBanksId) {
+        await this.prismaService.user_banks.update({
+          where: {
+            id: updateUserDto.userBanksId,
+          },
+          data: {
+            bank_id: updateUserDto.bankId,
+            account_number: updateUserDto.accountNumber,
+            updated_at: moment().format(),
+          },
+        });
+      }
+
+      updatedUserData = await this.prismaService.users.update({
+        where: {
+          id,
+        },
+        data: {
+          name: updateUserDto.name,
+          base_salary: updateUserDto.baseSalary,
+          next_payment_date: updateUserDto.nextPaymentDate,
+          received_earlypay: updateUserDto.receivedEarlyPay,
+          dob: updateUserDto.dob,
+          photo: updateUserDto.photo,
+          sex: updateUserDto.sex,
+          updated_at: moment().format(),
+          accounts: {
+            update: {
+              account_status: updateUserDto.accountStatus,
+              updated_at: moment().format(),
+            },
+          },
+          addresses: {
+            update: {
+              city: updateUserDto.city,
+              region: updateUserDto.region,
+              street: updateUserDto.street,
+              primary_phone_number: updateUserDto.primaryPhone,
+              secondery_phone_number: updateUserDto.seconddaryPhone,
+              updated_at: moment().format(),
+            },
+          },
+        },
+        include: {
+          addresses: true,
+          user_banks: true,
+          accounts: true,
+        },
+      });
+    } catch (error) {
+      this.logger.error(`${logPrefix()} ${error}`);
+      throw new HttpException(
+        `Error updating User`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    return updatedUserData;
   }
 
   remove(id: number) {

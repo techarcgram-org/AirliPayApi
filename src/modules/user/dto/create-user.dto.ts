@@ -7,7 +7,6 @@ export class CreateUserDto {
     description: 'Employees full name',
   })
   @IsNotEmpty()
-  @IsString()
   name: string;
 
   @ApiProperty({
@@ -15,7 +14,6 @@ export class CreateUserDto {
     description: 'Employees email',
   })
   @IsNotEmpty()
-  @IsString()
   email: string;
 
   @ApiProperty({
@@ -23,7 +21,6 @@ export class CreateUserDto {
     description: 'Employees base salarry',
   })
   @IsNotEmpty()
-  @IsNumber()
   baseSalary: number;
 
   @ApiProperty({
@@ -31,7 +28,6 @@ export class CreateUserDto {
     description: 'Employees date of birth',
   })
   @IsNotEmpty()
-  @IsString()
   dob: string;
 
   @ApiProperty({
@@ -39,7 +35,6 @@ export class CreateUserDto {
     description: 'Employees sex',
   })
   @IsNotEmpty()
-  @IsString()
   sex: string;
 
   @ApiProperty({
@@ -53,7 +48,6 @@ export class CreateUserDto {
     description: "Employee's client",
   })
   @IsNotEmpty()
-  @IsNumber()
   clientId: number;
 
   @ApiProperty({
@@ -61,7 +55,6 @@ export class CreateUserDto {
     description: 'Employees city where he lives',
   })
   @IsNotEmpty()
-  @IsString()
   city: string;
 
   @ApiProperty({
@@ -69,7 +62,6 @@ export class CreateUserDto {
     description: 'Employees street where he lives',
   })
   @IsNotEmpty()
-  @IsString()
   street: string;
 
   @ApiProperty({
@@ -77,7 +69,6 @@ export class CreateUserDto {
     description: 'Employees region where he lives',
   })
   @IsNotEmpty()
-  @IsString()
   region: string;
 
   @ApiProperty({
@@ -85,13 +76,11 @@ export class CreateUserDto {
     description: 'Employees primary phone',
   })
   @IsNotEmpty()
-  @IsString()
   primaryPhone: string;
 
   @ApiProperty({
     type: 'string',
     description: 'Employees secondary phone',
   })
-  @IsString()
   seconddaryPhone: string;
 }

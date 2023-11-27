@@ -71,6 +71,12 @@ export class ClientService {
           'Username or email already exists.',
           HttpStatus.BAD_REQUEST,
         );
+      } else {
+        this.logger.error(`${logPrefix()} ${error}`);
+        throw new HttpException(
+          `Error creating user: ${error}`,
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
       }
     }
     // Creates account for every user from employee roaster csv

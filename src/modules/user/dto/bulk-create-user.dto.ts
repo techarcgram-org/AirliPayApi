@@ -7,6 +7,5 @@ export class BuldCreateUserDto {
     description: "Employee's employer id",
   })
   @IsNotEmpty()
-  @IsNumber()
   clientId: number;
 }

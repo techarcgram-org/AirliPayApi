@@ -6,6 +6,7 @@ import { AppModule } from './app.module';
 import 'src/common/lib/bingint';
 import { ValidationPipe } from '@nestjs/common';
 import { AppConfigService } from './config/config.service';
+import { TrimPipe } from './common/pipes/trim.pipe';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -16,6 +17,7 @@ async function bootstrap() {
       transform: true,
       transformOptions: { enableImplicitConversion: true },
     }),
+    // new TrimPipe(),
   );
   const config = new DocumentBuilder()
     .setTitle('AirliPay Swagger')
