@@ -18,7 +18,7 @@ import {
   generatePasswordHash,
   logPrefix,
 } from 'src/common/utils/util';
-import { Prisma, banks, user_banks } from '@prisma/client';
+import { Prisma, banks, user_banks, users } from '@prisma/client';
 
 @Injectable()
 export class UserService {
@@ -27,6 +27,29 @@ export class UserService {
     private mailService: MailService,
     private logger: Logger,
   ) {}
+
+  async get() {
+    const users = await this.prismaService.users.findMany({
+      include: {
+        accounts: {
+          select: {
+            email: true,
+            account_status: true,
+          },
+        },
+        addresses: true,
+      },
+    });
+
+    const flattenedUsers = [];
+    users.forEach((parent) => {
+      console.log(parent);
+      flattenedUsers.push(parent);
+      // flattenedUsers.push(...parent.accounts);
+      // flattenedUsers.push(...parent.addresses);
+    });
+    return flattenedUsers;
+  }
 
   async create(createUserDto: CreateUserDto) {
     let user;
@@ -489,7 +512,6 @@ export class UserService {
           },
         });
       }
-
       updatedUserData = await this.prismaService.users.update({
         where: {
           id,

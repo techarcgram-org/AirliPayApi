@@ -17,6 +17,7 @@
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
-    "esModuleInterop": false
+    "esModuleInterop": false,
+    "lib": ["es5", "es6", "dom", "dom.iterable"]
   }
 }
