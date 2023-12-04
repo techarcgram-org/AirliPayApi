@@ -43,10 +43,11 @@ export class UserService {
 
     const flattenedUsers = [];
     users.forEach((parent) => {
+      parent = { ...parent, ...parent.accounts, ...parent.addresses };
+      delete parent.accounts;
+      delete parent.addresses;
       console.log(parent);
       flattenedUsers.push(parent);
-      // flattenedUsers.push(...parent.accounts);
-      // flattenedUsers.push(...parent.addresses);
     });
     return flattenedUsers;
   }
