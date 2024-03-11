@@ -24,7 +24,7 @@ pipeline {
         // }
         stage('Deliver') {
             steps {
-                sh 'yarn run start:dev'
+                sh 'yarn run start:prod'
             }
         }
     }
