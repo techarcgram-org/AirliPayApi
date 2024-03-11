@@ -25,6 +25,7 @@ export class AuthService {
         admins: true,
       },
     });
+    console.log(username, account);
     if (
       account &&
       bcrypt.compareSync(password, account.encrypted_password) &&
@@ -39,6 +40,7 @@ export class AuthService {
   }
 
   async login(account: any, remember: boolean) {
+    this.logger.debug(`Logging in user: ${account.email}`);
     const sub =
       account.clients.length === 1
         ? account.clients[0].id
@@ -53,7 +55,7 @@ export class AuthService {
     delete account['encrypted_password'];
     return {
       access_token: remember
-        ? this.jwtService.sign(payload, { expiresIn: '60d' })
+        ? this.jwtService.sign(payload, { expiresIn: '30d' })
         : this.jwtService.sign(payload, { expiresIn: '1d' }),
       data: account,
     };

@@ -116,6 +116,11 @@ export class UsersController {
     return await this.usersService.listUserBanks(user);
   }
 
+  @Get('/:id/airlipays')
+  getAirliPays(@Param('id') id) {
+    return this.usersService.getAirlipays(+id);
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(+id, updateUserDto);

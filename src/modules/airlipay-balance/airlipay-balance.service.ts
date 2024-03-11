@@ -291,7 +291,7 @@ export class AirlipayBalanceService {
   }
 
   // @Cron(CronExpression.EVERY_HOUR)
-  @Cron('0 0 */1 * * 1-5')
+  @Cron('0 0 */1 * * 1-5', { name: 'balanceUpdateJob' })
   async updateBalance() {
     try {
       const users = await this.prismaService.users.findMany();
@@ -311,6 +311,7 @@ export class AirlipayBalanceService {
               balance: addAToB(balance.balance, biHourlyPay),
             },
           });
+
           await this.prismaService.early_transactions.create({
             data: {
               user_id: user.id,
@@ -326,23 +327,24 @@ export class AirlipayBalanceService {
               updated_at: moment().format(),
             },
           });
-          try {
-            const channel = PusherChannels.PAYMENT_SUCCESS + `-${user.id}`;
-            const data = {
-              amount: biHourlyPay,
-              user: user.id,
-              type: PusherEvents.EARLYPAY_TOPUP_SUCCESS,
-            };
-            await this.pusherService.trigger(
-              'my-channel',
-              PusherEvents.EARLYPAY_TOPUP_SUCCESS,
-              data,
-            );
-          } catch (error) {
-            this.logger.debug(
-              `Failed to trigger pusher event: ${error?.message}`,
-            );
-          }
+          this.logger.log(`Airlipay Added to ${user.name}`);
+          // try {
+          //   const channel = PusherChannels.PAYMENT_SUCCESS + `-${user.id}`;
+          //   const data = {
+          //     amount: biHourlyPay,
+          //     user: user.id,
+          //     type: PusherEvents.EARLYPAY_TOPUP_SUCCESS,
+          //   };
+          //   await this.pusherService.trigger(
+          //     'my-channel',
+          //     PusherEvents.EARLYPAY_TOPUP_SUCCESS,
+          //     data,
+          //   );
+          // } catch (error) {
+          //   this.logger.debug(
+          //     `Failed to trigger pusher event: ${error?.message}`,
+          //   );
+          // }
         }
       });
     } catch (error) {

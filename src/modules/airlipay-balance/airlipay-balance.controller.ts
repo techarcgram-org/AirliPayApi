@@ -43,7 +43,6 @@ export class AirlipayBalanceController {
     @Res({ passthrough: true }) res,
     @GetUser() user: UserSession,
   ) {
-    console.log('USERROLES', userRoles);
     return await this.airlipayBalanceService.getUserBalance(user);
   }
 

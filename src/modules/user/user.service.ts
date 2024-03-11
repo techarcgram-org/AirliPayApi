@@ -35,6 +35,8 @@ export class UserService {
           select: {
             email: true,
             account_status: true,
+            account_type: true,
+            confirm_secret: true,
           },
         },
         addresses: true,
@@ -46,7 +48,6 @@ export class UserService {
       parent = { ...parent, ...parent.accounts, ...parent.addresses };
       delete parent.accounts;
       delete parent.addresses;
-      console.log(parent);
       flattenedUsers.push(parent);
     });
     return flattenedUsers;
@@ -241,6 +242,19 @@ export class UserService {
     );
 
     return userList;
+  }
+
+  async getAirlipays(id: number) {
+    return await this.prismaService.early_transactions.findMany({
+      orderBy: [
+        {
+          created_at: 'desc',
+        },
+      ],
+      where: {
+        user_id: id,
+      },
+    });
   }
 
   findAll() {
@@ -498,7 +512,6 @@ export class UserService {
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
-    console.log(updateUserDto, id);
     let updatedUserData;
     try {
       if (updateUserDto.userBanksId) {

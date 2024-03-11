@@ -65,7 +65,6 @@ export class MtnService {
     }
 
     try {
-      console.log(data);
       const res = await axios.post(`${baseUrl}/${path}`, data, {
         headers: {
           'X-Reference-Id': transactionId,

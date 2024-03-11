@@ -28,7 +28,6 @@ export class TrimPipe implements PipeTransform {
 
   transform(values: any, metadata: ArgumentMetadata) {
     const { type } = metadata;
-    console.log('META', metadata, values);
     if (this.isObj(values) && (type === 'body' || type === 'custom')) {
       return this.trim(values);
     }

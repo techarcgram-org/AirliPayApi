@@ -6,7 +6,7 @@ export const RBAC_POLICY: RolesBuilder = new RolesBuilder();
 // prettier-ignore
 RBAC_POLICY
   .grant(Role.USER)
-    .readOwn('employeeData')
+    .read('employeeData')
   .grant(Role.CLIENT)
     .extend(Role.USER)
     .read('managedEmployeeData')

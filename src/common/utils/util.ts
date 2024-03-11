@@ -114,7 +114,6 @@ export const csvFileName = (req, file, callback) => {
 export const csvDestination = (req, file, callback) => {
   const name = (req.body && req.body.name) || 'csv-client';
   const folderName = './uploads/' + name;
-  console.log('FOLDERNAME', folderName);
   callback(null, folderName);
 };
 
