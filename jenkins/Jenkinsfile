@@ -1,10 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'node:lts-slim'
-            args '-p 3000:3000'
-        }
-    }
+    agent any
     environment {
         CI = 'true'
 
@@ -12,9 +7,7 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                sh 'node --version'
-                sh 'yarn install'
-                sh 'yarn run build'
+                sh 'docker build -t airlipay-api .'
             }
         }
         // stage('Test') {
@@ -24,7 +17,7 @@ pipeline {
         // }
         stage('Deliver') {
             steps {
-                sh 'yarn run start:prod'
+                sh 'docker run -it airlipay-api'
             }
         }
     }
