@@ -17,7 +17,7 @@ pipeline {
         // }
         stage('Deliver') {
             steps {
-                sh 'docker run -it airlipay-api'
+                sh 'docker run -i airlipay-api'
             }
         }
     }
