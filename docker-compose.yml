@@ -17,8 +17,8 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: airlipay-api
-    environment:
-      - PORT=${PORT}
+    env_file:
+      - .env.example
     ports:
       - '3000:3000'
     depends_on:
