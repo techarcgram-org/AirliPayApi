@@ -1,7 +1,7 @@
 pipeline {
     agent {
         docker {
-            image 'node:lts-buster-slim'
+            image 'node:lts-slim'
             args '-p 3000:3000'
         }
     }
