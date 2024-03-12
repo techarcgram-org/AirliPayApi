@@ -8,7 +8,7 @@ services:
       - POSTGRES_PASSWORD=postgres
     container_name: postgres
     volumes:
-      - home:/var/lib/postgresql/data
+      - ./pgdata:/var/lib/postgresql/data
     ports:
       - '5432:5432'
 
@@ -37,8 +37,6 @@ services:
       - '5050:80'
     user: '${UID}:${GID}'
     volumes:
-      - home:/var/lib/pgadmin
+      - ./pgadmin-data:/var/lib/pgadmin
     depends_on:
       - db
-volumes:
-  home: /home/techarcgram/
