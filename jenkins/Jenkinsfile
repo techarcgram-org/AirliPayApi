@@ -5,11 +5,11 @@ pipeline {
 
     }
     stages {
-        stage('Build') {
-            steps {
-                sh 'docker build -t airlipay-api .'
-            }
-        }
+        // stage('Build') {
+        //     steps {
+        //         sh 'docker build -t airlipay-api .'
+        //     }
+        // }
         // stage('Test') {
         //     steps {
         //         sh './jenkins/scripts/test.sh'
@@ -17,7 +17,7 @@ pipeline {
         // }
         stage('Deliver') {
             steps {
-                sh 'docker run -i airlipay-api'
+                sh 'docker compose up'
             }
         }
     }
