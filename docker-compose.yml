@@ -3,16 +3,14 @@ version: '3.5'
 services:
   db:
     image: postgres
-    restart: always
+    restart: unless-stopped
     environment:
       - POSTGRES_PASSWORD=postgres
-      - PGDATA=/var/lib/postgresql/data/
     container_name: postgres
     volumes:
-      - ./pgdata:/var/lib/postgresql/data:rw
+      - postgres-data:/var/lib/postgresql/data
     ports:
       - '5432:5432'
-
   app:
     build:
       context: .
@@ -29,8 +27,8 @@ services:
 
   pgadmin:
     image: dpage/pgadmin4
-    restart: always
-    container_name: nest-pgadmin4
+    restart: unless-stopped
+    container_name: pgadmin4
     environment:
       - PGADMIN_DEFAULT_EMAIL=admin@admin.com
       - PGADMIN_DEFAULT_PASSWORD=pgadmin4
@@ -38,6 +36,10 @@ services:
       - '5050:80'
     user: '${UID}:${GID}'
     volumes:
-      - ./pgadmin-data:/var/lib/pgadmin
+      - pgadmin-data:/var/lib/pgadmin
     depends_on:
       - db
+
+volumes:
+  postgres-data:
+  pgadmin-data:
