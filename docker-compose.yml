@@ -8,8 +8,9 @@ services:
     user: '${UID}:${GID}'
     volumes:
       - /home/techarcgram/pgdata:/var/lib/postgresql/data
-    ports:
-      - '5432:5432'
+    networks:
+      - postgres_network
+
   app:
     build:
       context: .
@@ -23,6 +24,8 @@ services:
       - db
     volumes:
       - ./src:/app/src
+    networks:
+      - postgres_network
 
   pgadmin:
     image: dpage/pgadmin4
@@ -38,3 +41,12 @@ services:
       - /home/techarcgram/pgadmin-data:/var/lib/pgadmin
     depends_on:
       - db
+    networks:
+      - postgres_network
+
+networks:
+  postgres_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
