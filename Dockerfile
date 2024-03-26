@@ -72,6 +72,5 @@ FROM dependencies as builder
 RUN yarn prisma generate
 RUN yarn build
 
-EXPOSE 3001
 
 CMD ["node", "dist/main.js"]
