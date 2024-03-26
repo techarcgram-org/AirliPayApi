@@ -80,7 +80,9 @@ export class UsersController {
     @Res({ passthrough: true }) res: Response,
     @Query() queryParams: GetUserByEmployeeIdDto,
   ) {
-    const user = await this.usersService.findOne(queryParams.employeeId);
+    const user = await this.usersService.findOneByEmployeeId(
+      queryParams.employeeId,
+    );
     return formatResponse(user, res, HttpStatus.OK);
   }
 
@@ -102,6 +104,11 @@ export class UsersController {
       queryParams.employeeEmail,
     );
     return formatResponse(user, res, HttpStatus.OK);
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.usersService.findOne(+id);
   }
 
   @Get('/list-banks')

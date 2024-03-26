@@ -53,6 +53,25 @@ export class UserService {
     return flattenedUsers;
   }
 
+  async findOne(id: number) {
+    const user = await this.prismaService.users.findFirst({
+      where: { id },
+      include: {
+        accounts: {
+          select: {
+            email: true,
+            account_status: true,
+            account_type: true,
+            confirm_secret: true,
+          },
+        },
+        addresses: true,
+      },
+    });
+
+    return user;
+  }
+
   async create(createUserDto: CreateUserDto) {
     let user;
     let employee_id;
@@ -325,7 +344,9 @@ export class UserService {
     }
   }
 
-  async findOne(employeeId: string): Promise<UserWithAccounts | undefined> {
+  async findOneByEmployeeId(
+    employeeId: string,
+  ): Promise<UserWithAccounts | undefined> {
     const user = await this.prismaService.users.findFirst({
       where: {
         employee_id: employeeId,
