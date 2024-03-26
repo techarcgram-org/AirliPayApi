@@ -41,7 +41,8 @@ export enum AccountStatus {
   DEACTIVATED = 'DEACTIVATED',
   ACTIVE = 'ACTIVE',
   PENDING = 'PENDING',
-  BLOCKEDBANNED = 'BLOCKEDBANNED',
+  BLOCKED = 'BLOCKED',
+  BANNED = 'BANNED',
 }
 
 export const TestNumbers = [

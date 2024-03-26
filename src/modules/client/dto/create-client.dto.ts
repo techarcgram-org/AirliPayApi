@@ -56,7 +56,7 @@ export class CreateClientDto {
     type: 'string',
     description: 'client/employer list of employees file in CSV format',
   })
-  bankdAccountNumber: string;
+  bankAccountNumber: string;
 
   @ApiProperty({
     type: 'string',

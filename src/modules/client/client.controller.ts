@@ -52,8 +52,21 @@ export class ClientController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateClientDto: UpdateClientDto) {
-    return this.clientService.update(+id, updateClientDto);
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads/employee-roasters',
+        filename: csvFileName,
+      }),
+      fileFilter: csvFileFilter,
+    }),
+  )
+  update(
+    @Param('id') id: string,
+    @Body() updateClientDto: UpdateClientDto,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.clientService.update(+id, updateClientDto, file);
   }
 
   @Delete(':id')

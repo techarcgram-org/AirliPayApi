@@ -13,6 +13,7 @@ import { PusherModule } from './core/pusher/pusher.module';
 import { AccessControlModule } from 'nest-access-control';
 import { RBAC_POLICY } from './modules/auth/rbac-policy';
 import { ClientModule } from './modules/client/client.module';
+import { AdminModule } from './modules/admin/admin.module';
 @Module({
   imports: [
     AppConfigModule,
@@ -26,6 +27,7 @@ import { ClientModule } from './modules/client/client.module';
     ScheduleModule.forRoot(),
     AccessControlModule.forRoles(RBAC_POLICY),
     ClientModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],
