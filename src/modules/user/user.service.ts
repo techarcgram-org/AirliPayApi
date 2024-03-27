@@ -18,7 +18,7 @@ import {
   generatePasswordHash,
   logPrefix,
 } from 'src/common/utils/util';
-import { Prisma, banks, user_banks, users } from '@prisma/client';
+import { Prisma, banks } from '@prisma/client';
 
 @Injectable()
 export class UserService {
@@ -51,6 +51,25 @@ export class UserService {
       flattenedUsers.push(parent);
     });
     return flattenedUsers;
+  }
+
+  async findOne(id: number) {
+    const user = await this.prismaService.users.findFirst({
+      where: { id },
+      include: {
+        accounts: {
+          select: {
+            email: true,
+            account_status: true,
+            account_type: true,
+            confirm_secret: true,
+          },
+        },
+        addresses: true,
+      },
+    });
+
+    return user;
   }
 
   async create(createUserDto: CreateUserDto) {
@@ -95,7 +114,7 @@ export class UserService {
               region: createUserDto.region,
               street: createUserDto.street,
               primary_phone_number: createUserDto.primaryPhone,
-              secondery_phone_number: createUserDto.seconddaryPhone,
+              secondery_phone_number: createUserDto.secondaryPhone,
               created_at: moment().format(),
               updated_at: moment().format(),
             },
@@ -325,7 +344,9 @@ export class UserService {
     }
   }
 
-  async findOne(employeeId: string): Promise<UserWithAccounts | undefined> {
+  async findOneByEmployeeId(
+    employeeId: string,
+  ): Promise<UserWithAccounts | undefined> {
     const user = await this.prismaService.users.findFirst({
       where: {
         employee_id: employeeId,
@@ -512,6 +533,21 @@ export class UserService {
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
+    const user = await this.prismaService.users.findFirst({
+      where: { id },
+    });
+
+    // Check if the user exists
+    if (!user) {
+      this.logger.error(
+        `${logPrefix()} Error updating User: User with id: ${id} not found`,
+      );
+      throw new HttpException(
+        `Error updating User: User with id: ${id} not found`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
     let updatedUserData;
     try {
       if (updateUserDto.userBanksId) {
@@ -573,7 +609,44 @@ export class UserService {
     return updatedUserData;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(id: number) {
+    // Find the user by ID
+    const user = await this.prismaService.users.findUnique({
+      where: { id },
+    });
+
+    // If the user doesn't exist, throw a NotFoundException
+    if (!user) {
+      this.logger.error(
+        `${logPrefix()} Error deleting User: User with id: ${id} not found`,
+      );
+      throw new HttpException(
+        `Error deleting User: User with id: ${id} not found`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    try {
+      await this.prismaService.users.update({
+        where: {
+          id,
+        },
+        data: {
+          updated_at: moment().format(),
+          accounts: {
+            update: {
+              account_status: AccountStatus.DEACTIVATED,
+              updated_at: moment().format(),
+            },
+          },
+        },
+      });
+    } catch (error) {
+      this.logger.error(`${logPrefix()} ${error}`);
+      throw new HttpException(
+        `Error Deleting User`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

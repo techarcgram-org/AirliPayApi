@@ -82,5 +82,5 @@ export class CreateUserDto {
     type: 'string',
     description: 'Employees secondary phone',
   })
-  seconddaryPhone: string;
+  secondaryPhone: string;
 }

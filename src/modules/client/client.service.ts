@@ -3,7 +3,7 @@ import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 import { PrismaService } from 'src/common/services/prisma.service';
 import { create } from 'domain';
-import { Role } from 'src/common/constants';
+import { AccountStatus, Role } from 'src/common/constants';
 import {
   constructUsersArrayFromCsv,
   generatePasswordHash,
@@ -147,19 +147,168 @@ export class ClientService {
     return client;
   }
 
-  findAll() {
-    return `This action returns all client`;
+  async findAll() {
+    const clients = await this.prismaService.clients.findMany({
+      include: {
+        accounts: {
+          select: {
+            email: true,
+            account_status: true,
+            account_type: true,
+            confirm_secret: true,
+          },
+        },
+        addresses: true,
+      },
+    });
+
+    return clients;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} client`;
+  async findOne(id: number) {
+    const client = await this.prismaService.clients.findFirst({
+      where: { id },
+      include: {
+        accounts: {
+          select: {
+            email: true,
+            account_status: true,
+            account_type: true,
+            confirm_secret: true,
+          },
+        },
+        addresses: true,
+      },
+    });
+
+    return client;
   }
 
-  update(id: number, updateClientDto: UpdateClientDto) {
-    return `This action updates a #${id} client`;
+  async update(
+    id: number,
+    updateClientDto: UpdateClientDto,
+    file: Express.Multer.File,
+  ) {
+    const client = await this.prismaService.clients.findFirst({
+      where: { id },
+    });
+    // Check if the client exists
+    if (!client) {
+      this.logger.error(
+        `${logPrefix()} Error updating Client: Client with id: ${id} not found`,
+      );
+      throw new HttpException(
+        `Error updating Client: Client with id: ${id} not found`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    let updatedClientData;
+    try {
+      updatedClientData = await this.prismaService.clients.update({
+        where: {
+          id,
+        },
+        data: {
+          name: updateClientDto.name,
+          industry: updateClientDto.industry,
+          tax_id: updateClientDto.taxId,
+          client_commision: updateClientDto.clientCommision,
+          // earning_report_status: createClientDto.earning_report_status,
+          next_payment_date: updateClientDto.nextPaydate,
+          employee_roaster_file: file?.filename || null,
+          updated_at: moment().format(),
+          accounts: {
+            update: {
+              account_status: updateClientDto.accountStatus,
+              updated_at: moment().format(),
+            },
+          },
+          addresses: {
+            update: {
+              city: updateClientDto.city,
+              region: updateClientDto.region,
+              street: updateClientDto.street,
+              primary_phone_number: updateClientDto.primaryPhone,
+              secondery_phone_number: updateClientDto.secondaryPhone,
+              updated_at: moment().format(),
+            },
+          },
+        },
+        include: {
+          addresses: true,
+          accounts: true,
+        },
+      });
+    } catch (error) {
+      this.logger.error(`${logPrefix()} ${error}`);
+      throw new HttpException(
+        `Error updating Client`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    return updatedClientData;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} client`;
+  async remove(id: number) {
+    // Find the client by ID
+    const client = await this.prismaService.clients.findUnique({
+      where: { id },
+    });
+
+    // If the client doesn't exist, throw a NotFoundException
+    if (!client) {
+      this.logger.error(
+        `${logPrefix()} Error Deleting Client: Client with id: ${id} not found`,
+      );
+      throw new HttpException(
+        `Error deleting Client: Client with id: ${id} not found`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    // try {
+    //   await this.prismaService.accounts.delete({
+    //     where: { id: client.account_id },
+    //   });
+
+    //   await this.prismaService.addresses.delete({
+    //     where: { id: client.address_id },
+    //   });
+    //   // Delete the client using Prisma client
+    //   await this.prismaService.clients.delete({
+    //     where: { id },
+    //   });
+    // } catch (error) {
+    //   // Handle any errors that occur during deletion
+    //   this.logger.error(`${logPrefix()} ${error}`);
+    //   throw new HttpException(
+    //     `Error deleteing Client`,
+    //     HttpStatus.INTERNAL_SERVER_ERROR,
+    //   );
+    // }
+    try {
+      await this.prismaService.clients.update({
+        where: {
+          id,
+        },
+        data: {
+          updated_at: moment().format(),
+          accounts: {
+            update: {
+              account_status: AccountStatus.DEACTIVATED,
+              updated_at: moment().format(),
+            },
+          },
+        },
+      });
+    } catch (error) {
+      this.logger.error(`${logPrefix()} ${error}`);
+      throw new HttpException(
+        `Error Deleting Client`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }
