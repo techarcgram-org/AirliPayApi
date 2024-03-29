@@ -39,7 +39,15 @@ export class UserService {
             confirm_secret: true,
           },
         },
-        addresses: true,
+        addresses: {
+          select: {
+            primary_phone_number: true,
+            city: true,
+            region: true,
+            street: true,
+            secondery_phone_number: true,
+          },
+        },
       },
     });
 
@@ -68,7 +76,7 @@ export class UserService {
         addresses: true,
       },
     });
-
+    console.log(user);
     return user;
   }
 
