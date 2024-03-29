@@ -8,6 +8,7 @@ import {
   Delete,
   UploadedFile,
   UseInterceptors,
+  UseGuards,
 } from '@nestjs/common';
 import { ClientService } from './client.service';
 import { CreateClientDto } from './dto/create-client.dto';
@@ -19,11 +20,15 @@ import {
   csvFileFilter,
   csvFileName,
 } from 'src/common/utils/util';
+import { AuthGuard } from '../auth/auth.guard';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('client')
 export class ClientController {
   constructor(private readonly clientService: ClientService) {}
 
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
   @Post()
   @UseInterceptors(
     FileInterceptor('file', {
@@ -41,16 +46,22 @@ export class ClientController {
     return this.clientService.create(createClientDto, file);
   }
 
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
   @Get()
   findAll() {
     return this.clientService.findAll();
   }
 
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.clientService.findOne(+id);
   }
 
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
   @Patch(':id')
   @UseInterceptors(
     FileInterceptor('file', {
@@ -69,6 +80,8 @@ export class ClientController {
     return this.clientService.update(+id, updateClientDto, file);
   }
 
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.clientService.remove(+id);
