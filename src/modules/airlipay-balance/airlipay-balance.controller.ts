@@ -52,7 +52,7 @@ export class AirlipayBalanceController {
   async listTransactions(
     @Res({ passthrough: true }) res,
     @Body() listTransactionDto: ListTransactionDto,
-    @GetUser() user: UserSession,
+    @GetUser() user: any,
   ) {
     return await this.airlipayBalanceService.listWithdrawalTransac(
       user,

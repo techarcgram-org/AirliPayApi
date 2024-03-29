@@ -256,7 +256,7 @@ export class AirlipayBalanceService {
   }
 
   async listWithdrawalTransac(
-    user: UserSession,
+    user: any,
     listTransactionDto: ListTransactionDto,
   ): Promise<early_transactions[]> {
     const { status, type, page } = listTransactionDto;
@@ -265,7 +265,8 @@ export class AirlipayBalanceService {
     const pageSize = listTransactionDto.pageSize
       ? listTransactionDto.pageSize
       : 15;
-    if (user) {
+    console.log(user.roles, listTransactionDto);
+    if (user?.roles?.includes('USER')) {
       where = { ...where, user_id: user.sub };
     }
     if (listTransactionDto.status) {
