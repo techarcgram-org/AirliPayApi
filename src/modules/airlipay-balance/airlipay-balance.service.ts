@@ -265,7 +265,6 @@ export class AirlipayBalanceService {
     const pageSize = listTransactionDto.pageSize
       ? listTransactionDto.pageSize
       : 15;
-    console.log(user.roles, listTransactionDto);
     if (user?.roles?.includes('USER')) {
       where = { ...where, user_id: user.sub };
     }

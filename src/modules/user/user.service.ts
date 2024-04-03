@@ -37,6 +37,9 @@ export class UserService {
             account_status: true,
             account_type: true,
             confirm_secret: true,
+            activation_date: true,
+            created_at: true,
+            updated_at: true,
           },
         },
         addresses: {
@@ -48,15 +51,28 @@ export class UserService {
             secondery_phone_number: true,
           },
         },
+        clients: {
+          select: {
+            name: true,
+          },
+        },
+        user_banks: true,
+        user_mobile_money_accounts: true,
       },
     });
 
     const flattenedUsers = [];
     users.forEach((parent) => {
-      parent = { ...parent, ...parent.accounts, ...parent.addresses };
-      delete parent.accounts;
-      delete parent.addresses;
-      flattenedUsers.push(parent);
+      const newParent = {
+        client_name: parent.clients.name,
+        ...parent,
+        ...parent.accounts,
+        ...parent.addresses,
+      };
+      delete newParent.accounts;
+      delete newParent.addresses;
+      delete newParent.clients;
+      flattenedUsers.push(newParent);
     });
     return flattenedUsers;
   }
@@ -71,12 +87,15 @@ export class UserService {
             account_status: true,
             account_type: true,
             confirm_secret: true,
+            activation_date: true,
+            created_at: true,
+            updated_at: true,
           },
         },
         addresses: true,
+        clients: true,
       },
     });
-    console.log(user);
     return user;
   }
 

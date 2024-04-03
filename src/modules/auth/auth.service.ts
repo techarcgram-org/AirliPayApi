@@ -25,7 +25,6 @@ export class AuthService {
         admins: true,
       },
     });
-    console.log(username, account);
     if (
       account &&
       bcrypt.compareSync(password, account.encrypted_password) &&
