@@ -14,6 +14,7 @@ import { AccessControlModule } from 'nest-access-control';
 import { RBAC_POLICY } from './modules/auth/rbac-policy';
 import { ClientModule } from './modules/client/client.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { InvoiceModule } from './modules/invoice/invoice.module';
 @Module({
   imports: [
     AppConfigModule,
@@ -28,6 +29,7 @@ import { AdminModule } from './modules/admin/admin.module';
     AccessControlModule.forRoles(RBAC_POLICY),
     ClientModule,
     AdminModule,
+    InvoiceModule,
   ],
   controllers: [AppController],
   providers: [AppService],

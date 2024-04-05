@@ -107,6 +107,9 @@ model clients {
   addresses             addresses         @relation(fields: [address_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_56e36fce15")
   accounts              accounts          @relation(fields: [account_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_bed59fd791")
   users                 users[]
+  invoices              invoices[]
+  client_mobile_money_accounts client_mobile_money_accounts[]
+  client_banks          client_banks[]
 
   @@index([account_id], map: "index_clients_on_account_id")
   @@index([address_id], map: "index_clients_on_address_id")
@@ -158,6 +161,7 @@ model banks {
   updated_at   DateTime     @db.Timestamp(6)
   addresses    addresses    @relation(fields: [address_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_310a58ada9")
   user_banks   user_banks[]
+  client_banks client_banks[]
 
   @@index([address_id], map: "index_banks_on_address_id")
 }
@@ -175,6 +179,20 @@ model user_banks {
 
   @@index([bank_id], map: "index_user_banks_on_bank_id")
   @@index([user_id], map: "index_user_banks_on_user_id")
+}
+
+model client_banks {
+  id               BigInt             @id @default(autoincrement())
+  account_number   String?            @db.VarChar
+  client_id        BigInt
+  bank_id          BigInt
+  created_at       DateTime           @db.Timestamp(6)
+  updated_at       DateTime           @db.Timestamp(6)
+  banks            banks              @relation(fields: [bank_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_8489a23145")
+  client           clients            @relation(fields: [client_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_9e84f78ddd")
+
+  @@index([bank_id], map: "index_client_banks_on_bank_id")
+  @@index([client_id], map: "index_client_banks_on_client_id")
 }
 
 model account_settings {
@@ -210,6 +228,19 @@ model user_mobile_money_accounts {
   users            users              @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_f3b530b4f3")
 
   @@index([user_id], map: "index_user_mobile_money_accounts_on_user_id")
+}
+
+model client_mobile_money_accounts {
+  id               BigInt             @id @default(autoincrement())
+  phone_number     String?            @db.VarChar
+  operator         operators?
+  client_id        BigInt
+  created_at       DateTime           @db.Timestamp(6)
+  updated_at       DateTime           @db.Timestamp(6)
+  default          Boolean?
+  client           clients              @relation(fields: [client_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_f3b530c4f3")
+
+  @@index([client_id], map: "index_client_mobile_money_accounts_on_client_id")
 }
 
 model airlipay_balances {
@@ -277,9 +308,27 @@ model early_transactions {
   created_at        DateTime            @db.Timestamp(6)
   updated_at        DateTime            @db.Timestamp(6)
   airlipay_balances airlipay_balances[]
-  users             users               @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_08c702b977")
+  users             users               @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_08c702b97")
 
   @@index([user_id], map: "index_early_transactions_on_user_id")
+}
+
+model invoices {
+  id                BigInt              @id @default(autoincrement())
+  invoice_number    String
+  client_id         BigInt
+  status            invoice_status
+  totalAmount       Decimal             @db.Decimal(10, 2)
+  totalFees         Decimal             @db.Decimal(10, 2)
+  from              DateTime
+  to                DateTime
+  taxes             Decimal
+  created_at        DateTime            @db.Timestamp(6)
+  updated_at        DateTime            @db.Timestamp(6)
+  client            clients             @relation(fields: [client_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_08c702b978")
+
+  @@index([client_id])
+  @@index([status])
 }
 
 enum transaction_types {
@@ -291,6 +340,12 @@ enum withdrawal_status {
   SUCCESS
   PENDING
   FAILED
+}
+
+enum invoice_status {
+  TREATED
+  NOT_TREATED
+  
 }
 
 enum operators {
@@ -308,6 +363,7 @@ enum account_status_types {
 }
 
 enum account_types {
+  SUPER_ADMIN
   ADMIN
   CLIENT
   USER

@@ -45,6 +45,11 @@ export enum AccountStatus {
   BANNED = 'BANNED',
 }
 
+export enum InvoiceStatus {
+  TREATED = 'TREATED',
+  NOT_TREATED = 'NOT_TREATED',
+}
+
 export const TestNumbers = [
   '46733123450',
   '46733123451',

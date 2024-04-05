@@ -42,12 +42,12 @@ export class AirlipayBalanceService {
     private pusherService: PusherService,
   ) {}
 
-  async getUserBalance(user: UserSession): Promise<airlipay_balances> {
+  async getUserBalance(user_id: number): Promise<airlipay_balances> {
     let balance: airlipay_balances;
     try {
       balance = await this.prismaService.airlipay_balances.findFirst({
         where: {
-          user_id: user.sub,
+          user_id: user_id,
         },
       });
     } catch (error) {
@@ -255,7 +255,7 @@ export class AirlipayBalanceService {
     return transaction;
   }
 
-  async listWithdrawalTransac(
+  async listWithdrawalTransactions(
     user: any,
     listTransactionDto: ListTransactionDto,
   ): Promise<early_transactions[]> {
@@ -268,6 +268,39 @@ export class AirlipayBalanceService {
     if (user?.roles?.includes('USER')) {
       where = { ...where, user_id: user.sub };
     }
+    if (listTransactionDto.status) {
+      where = { ...where, status };
+    }
+    if (listTransactionDto.type) {
+      where = { ...where, transaction_type: type };
+    }
+    try {
+      transactions = this.prismaService.early_transactions.findMany({
+        where,
+        skip: page ? (page - 1) * pageSize : undefined,
+        take: pageSize,
+      });
+    } catch (error) {
+      this.logger.error(`error ${error}`);
+      throw new HttpException(
+        `Server error: ${error}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+    return transactions;
+  }
+
+  async listUserWithdrawalTransactions(
+    user_id: number,
+    listTransactionDto: ListTransactionDto,
+  ): Promise<early_transactions[]> {
+    const { status, type, page } = listTransactionDto;
+    let transactions;
+    let where = {};
+    const pageSize = listTransactionDto.pageSize
+      ? listTransactionDto.pageSize
+      : 15;
+    where = { ...where, user_id: user_id };
     if (listTransactionDto.status) {
       where = { ...where, status };
     }

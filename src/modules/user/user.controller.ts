@@ -29,10 +29,16 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { csvFileFilter, csvFileName } from 'src/common/utils/util';
 import { BuldCreateUserDto } from './dto/bulk-create-user.dto';
+import { ListTransactionDto } from '../airlipay-balance/dto/list-transaction.dto';
+import { AirlipayBalanceService } from '../airlipay-balance/airlipay-balance.service';
+import { ACGuard, UseRoles, UserRoles } from 'nest-access-control';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UserService) {}
+  constructor(
+    private readonly usersService: UserService,
+    private readonly airlipayBalanceService: AirlipayBalanceService,
+  ) {}
 
   @Post()
   async create(@Body() createUserDto: CreateUserDto) {
@@ -109,6 +115,34 @@ export class UsersController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(+id);
+  }
+
+  @UseGuards(AuthGuard, ACGuard)
+  @ApiBearerAuth()
+  @UseRoles({
+    resource: 'employeeData',
+    action: 'read',
+    possession: 'any',
+  })
+  @Get(':user_id/airlipay-balance')
+  async getUserBalance(
+    @Param('user_id') user_id: number,
+    @Res({ passthrough: true }) res,
+  ) {
+    return await this.airlipayBalanceService.getUserBalance(user_id);
+  }
+
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  @Get('/:user_id/transactions')
+  async listUserTransactions(
+    @Param('user_id') user_id: number,
+    @Body() listTransactionDto: ListTransactionDto,
+  ) {
+    return await this.airlipayBalanceService.listUserWithdrawalTransactions(
+      user_id,
+      listTransactionDto,
+    );
   }
 
   @Get('/list-banks')

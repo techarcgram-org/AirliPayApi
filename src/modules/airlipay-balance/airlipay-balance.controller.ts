@@ -1,4 +1,12 @@
-import { Controller, Post, Body, Res, UseGuards, Get } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Res,
+  UseGuards,
+  Get,
+  Param,
+} from '@nestjs/common';
 import { AirlipayBalanceService } from './airlipay-balance.service';
 
 import { GetUser } from 'src/common/decorators/get-user.decorator';
@@ -30,22 +38,6 @@ export class AirlipayBalanceController {
     );
   }
 
-  @UseGuards(AuthGuard, ACGuard)
-  @ApiBearerAuth()
-  @UseRoles({
-    resource: 'employeeData',
-    action: 'read',
-    possession: 'any',
-  })
-  @Get('/')
-  async getUserBalance(
-    @UserRoles() userRoles: any,
-    @Res({ passthrough: true }) res,
-    @GetUser() user: UserSession,
-  ) {
-    return await this.airlipayBalanceService.getUserBalance(user);
-  }
-
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
   @Get('/transactions')
@@ -54,7 +46,7 @@ export class AirlipayBalanceController {
     @Body() listTransactionDto: ListTransactionDto,
     @GetUser() user: any,
   ) {
-    return await this.airlipayBalanceService.listWithdrawalTransac(
+    return await this.airlipayBalanceService.listWithdrawalTransactions(
       user,
       listTransactionDto,
     );

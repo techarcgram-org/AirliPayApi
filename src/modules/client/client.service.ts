@@ -3,7 +3,7 @@ import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 import { PrismaService } from 'src/common/services/prisma.service';
 import { create } from 'domain';
-import { AccountStatus, Role } from 'src/common/constants';
+import { AccountStatus, InvoiceStatus, Role } from 'src/common/constants';
 import {
   constructUsersArrayFromCsv,
   generatePasswordHash,
@@ -12,6 +12,8 @@ import {
 import * as moment from 'moment';
 import { MailService } from 'src/core/mail/mail.service';
 import { Prisma } from '@prisma/client';
+import { Cron } from '@nestjs/schedule';
+import { CreateClientBankDto } from './dto/create-client-bank.dto';
 
 @Injectable()
 export class ClientService {
@@ -316,5 +318,73 @@ export class ClientService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+
+  async getClientInvoices(clientId: number) {
+    let invoices;
+    try {
+      invoices = await this.prismaService.invoices.findMany({
+        where: {
+          client_id: clientId,
+        },
+      });
+    } catch (error) {
+      this.logger.error(`${logPrefix()} ${error}`);
+      throw new HttpException(
+        `Error getting client invoices`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+    return invoices;
+  }
+
+  async createClientBank(
+    clientId: number,
+    createClientBankDto: CreateClientBankDto,
+  ) {
+    let clientBank;
+    try {
+      clientBank = await this.prismaService.client_banks.create({
+        data: {
+          account_number: createClientBankDto.account_number,
+          client_id: clientId,
+          bank_id: createClientBankDto.bank_id,
+          created_at: moment().format(),
+          updated_at: moment().format(),
+        },
+      });
+    } catch (error) {
+      this.logger.error(`${logPrefix()} ${error}`);
+      throw new HttpException(
+        `Error creating client bank`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+    return clientBank;
+  }
+
+  async getClientBanks(clientId: number): Promise<any[]> {
+    let clientBanks: any[];
+    try {
+      clientBanks = await this.prismaService.client_banks.findMany({
+        where: {
+          client_id: clientId,
+        },
+        include: {
+          banks: {
+            include: {
+              addresses: true,
+            },
+          },
+        },
+      });
+    } catch (error) {
+      this.logger.error(`${logPrefix()} ${error}`);
+      throw new HttpException(
+        `Error getting client banks: ${error}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+    return clientBanks;
   }
 }
