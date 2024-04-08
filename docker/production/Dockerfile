@@ -71,6 +71,7 @@ COPY .env.example .env
 FROM dependencies as builder
 # RUN yarn prisma migrate dev --name init
 # CMD sh ./prisma/wait-for-postgres.sh ${DB_HOST} ${POSTGRES_USER} npx prisma migrate deploy --preview-feature
+RUN yarn prisma migrate deploy
 RUN yarn prisma generate
 RUN yarn build
 
