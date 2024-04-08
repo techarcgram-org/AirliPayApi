@@ -2,7 +2,7 @@ services:
   db:
     image: postgres
     restart: unless-stopped
-    environment:
+    env_file:
       - .env
     container_name: postgres
     user: '${UID}:${GID}'
@@ -17,7 +17,7 @@ services:
       dockerfile: Dockerfile
     container_name: airlipay-api
     env_file:
-      - .env.example
+      - .env
     ports:
       - '3000:3000'
     depends_on:
