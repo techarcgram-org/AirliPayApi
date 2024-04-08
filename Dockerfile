@@ -69,6 +69,7 @@ COPY . .
 # Build production image
 FROM dependencies as builder
 # RUN yarn prisma migrate dev --name init
+RUN yarn prisma migrate deploy
 RUN yarn prisma generate
 RUN yarn build
 
