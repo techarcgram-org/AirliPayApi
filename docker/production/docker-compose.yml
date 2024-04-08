@@ -4,8 +4,8 @@ services:
     restart: unless-stopped
     environment:
       - POSTGRES_PASSWORD=postgres
-      - POSTGRES_USER=postgres
-      - POSTGRES_DB=airlipay
+      # - POSTGRES_USER=postgres
+      # - POSTGRES_DB=airlipay
     container_name: postgres
     volumes:
       - /home/techarcgram/pgdata:/var/lib/postgresql/data
@@ -16,6 +16,10 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    logging:
+      options:
+        max-size: '10m' # Adjust size as needed
+        max-file: '3' # Adjust number of log files as needed
 
   app:
     build:
