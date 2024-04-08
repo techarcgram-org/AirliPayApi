@@ -4,8 +4,8 @@ services:
     restart: unless-stopped
     environment:
       - POSTGRES_PASSWORD=postgres
-      # - POSTGRES_USER=postgres
-      # - POSTGRES_DB=airlipay
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=airlipay
     container_name: postgres
     volumes:
       - /home/techarcgram/pgdata:/var/lib/postgresql/data
@@ -33,8 +33,6 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    links:
-      - db
     volumes:
       - ./src:/app/src
     networks:
