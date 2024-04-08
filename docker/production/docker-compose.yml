@@ -23,7 +23,7 @@ services:
       dockerfile: docker/production/Dockerfile
     container_name: airlipay-api
     env_file:
-      - ../../.env
+      - ../../.env.example
     ports:
       - '3000:3000'
     depends_on:
