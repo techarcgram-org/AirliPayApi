@@ -12,7 +12,8 @@ pipeline {
         }
         stage('Deliver') {
             steps {
-                sh 'docker compose -f docker/production/docker-compose.yml up --force-recreate'
+                sh 'docker compose -f docker/production/docker-compose.yml up --remove-orphans
+ --force-recreate'
             }
         }
     }
