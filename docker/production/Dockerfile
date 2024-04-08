@@ -68,12 +68,9 @@ RUN yarn install
 COPY . . 
 COPY .env.example .env
 # Build production image
-FROM dependencies as builder
-# RUN yarn prisma migrate dev --name init
-# CMD sh ./prisma/wait-for-postgres.sh ${DB_HOST} ${POSTGRES_USER} npx prisma migrate deploy --preview-feature
-RUN yarn prisma migrate deploy
+
+RUN yarn prisma migrate deploy --preview-feature
 RUN yarn prisma generate
 RUN yarn build
-
 
 CMD ["yarn", "run", "start:prod"]
