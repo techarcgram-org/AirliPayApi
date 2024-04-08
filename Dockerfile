@@ -66,6 +66,7 @@ WORKDIR /app
 COPY package.json ./
 RUN yarn install
 COPY . . 
+COPY .env.example .env
 # Build production image
 FROM dependencies as builder
 # RUN yarn prisma migrate dev --name init
