@@ -75,4 +75,4 @@ RUN yarn prisma generate
 RUN yarn build
 
 
-CMD ["node", "dist/main.js"]
+CMD ["yarn", "run", "start:prod"]

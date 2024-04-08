@@ -3,7 +3,7 @@ services:
     image: postgres
     restart: unless-stopped
     environment:
-      - POSTGRES_PASSWORD=postgres
+      - .env
     container_name: postgres
     user: '${UID}:${GID}'
     volumes:
