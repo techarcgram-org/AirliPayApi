@@ -77,11 +77,13 @@ COPY . .
 
 # Copy environment file
 COPY .env.example .env
-
-# Make the wait-for-postgres.sh script executable
-RUN chmod +x docker/scripts/wait-for-postgres.sh
-RUN docker/scripts/wait-for-postgres.sh "$POSTGRES_HOST" "$POSTGRES_USER"
 # Build production image
+# Make the wait-for-postgres.sh script executable
+# RUN chmod +x docker/scripts/wait-for-postgres.sh
+# RUN docker/scripts/wait-for-postgres.sh "$POSTGRES_HOST" "$POSTGRES_USER"
+
+DOCKER_CONTAINER_NAME="mypgcontainer"
+timeout 90s bash -c "until docker exec $DOCKER_CONTAINER_NAME pg_isready ; do sleep 5 ; done"
 RUN yarn prisma migrate deploy --preview-feature
 RUN yarn prisma generate
 RUN yarn build
