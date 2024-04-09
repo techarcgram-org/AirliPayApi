@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Param } from '@nestjs/common';
 import { InvoiceService } from './invoice.service';
 import { ListInvoicesDto } from './dto/list-invoices.dto';
 import { AuthGuard } from '../auth/auth.guard';
@@ -13,5 +13,12 @@ export class InvoiceController {
   @Get()
   async findAll(@Body() listInvoicesDto: ListInvoicesDto) {
     return await this.invoiceService.findAll(listInvoicesDto);
+  }
+
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  @Get(':id/transactions')
+  async allInvoiceTransactions(@Param('id') id: number) {
+    return await this.invoiceService.invoiceTransactions(id);
   }
 }
