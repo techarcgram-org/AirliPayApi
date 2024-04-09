@@ -79,10 +79,10 @@ COPY . .
 COPY .env.example .env
 # Build production image
 # Make the wait-for-postgres.sh script executable
-RUN chmod +x docker/scripts/wait-for-postgres.sh
-RUN docker/scripts/wait-for-postgres.sh
+# RUN chmod +x docker/scripts/wait-for-postgres.sh
+# RUN docker/scripts/wait-for-postgres.sh
 
-RUN yarn prisma migrate deploy --preview-feature
+# RUN yarn prisma migrate deploy --preview-feature
 RUN yarn prisma generate
 RUN yarn build
 
