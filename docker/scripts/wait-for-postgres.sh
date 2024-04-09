@@ -11,7 +11,7 @@ cmd="$@"
 
 PG_READY="pg_isready -h $POSTGRES_HOST -p $POSTGRES_PORT -U $POSTGRES_USERNAME"
   
-until PG_READY; do
+until $PG_READY; do
   >&2 echo "Postgres is unavailable - sleeping"
   sleep 1
 done
