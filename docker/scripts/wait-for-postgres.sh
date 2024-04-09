@@ -9,12 +9,18 @@ set -e
 # shift
 cmd="$@"
 
-DOCKER_CONTAINER_NAME="db"
-# PG_READY="pg_isready -h $POSTGRES_HOST -p $POSTGRES_PORT -U $POSTGRES_USERNAME"
-PG_READY="docker exec $DOCKER_CONTAINER_NAME pg_isready"
-# timeout 90s bash -c "until docker exec $DOCKER_CONTAINER_NAME pg_isready ; do sleep 5 ; done"
-until $PSQL -c "select version()" &> /dev/null; do
-  >&2 echo "Postgres is unavailable - sleeping"
+# Set the host and port to check
+HOST="db"
+PORT="5432"
+
+# Function to check if port is open
+check_port() {
+  nc -z "$1" "$2" >/dev/null 2>&1
+}
+
+# Check if the port is open
+until $PG_READY; do
+  >&2 echo "Port $PORT on host $HOST is not yet ready to receive connections."
   sleep 1
 done
   
