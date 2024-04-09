@@ -16,7 +16,7 @@ services:
   app:
     build:
       context: ../../
-      dockerfile: Dockerfile
+      dockerfile: docker/production/Dockerfile
     container_name: airlipay-api
     env_file:
       - ../../.env.example
