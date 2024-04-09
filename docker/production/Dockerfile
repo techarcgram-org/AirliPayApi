@@ -65,10 +65,11 @@ FROM node:18-alpine as dependencies
 WORKDIR /app
 COPY package.json ./
 RUN yarn install
-COPY . . 
 COPY .env.example .env
+COPY . . 
+
 # Build production image
-RUN chmod +x docker/production/scripts/wait-for-postgres.sh 
+RUN chmod +x docker/production/scripts/wait-for-postgres.sh
 RUN yarn prisma migrate deploy --preview-feature
 RUN yarn prisma generate
 RUN yarn build
