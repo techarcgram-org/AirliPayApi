@@ -70,7 +70,7 @@ WORKDIR /app
 COPY package.json ./
 
 # Install dependencies
-RUN yarn install --frozen-lockfile
+RUN yarn install
 
 # Copy other project files
 COPY . .
@@ -80,14 +80,14 @@ COPY .env.example .env
 
 # Make the wait-for-postgres.sh script executable
 RUN chmod +x docker/scripts/wait-for-postgres.sh
-
+ENTRYPOINT ["docker/scripts/wait-for-postgres.sh"]
 # Build production image
 RUN yarn prisma migrate deploy --preview-feature
 RUN yarn prisma generate
 RUN yarn build
 
 # Set the entrypoint to wait-for-postgres.sh
-ENTRYPOINT ["docker/scripts/wait-for-postgres.sh"]
+
 
 # Set default command to start the server
 CMD ["yarn", "run", "start:prod"]
