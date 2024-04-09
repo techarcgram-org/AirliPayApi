@@ -68,9 +68,11 @@ RUN yarn install
 COPY . . 
 COPY .env.example .env
 # Build production image
-
+RUN chmod +x docker/production/scripts/wait-for-postgres.sh postgres 
 RUN yarn prisma migrate deploy --preview-feature
 RUN yarn prisma generate
 RUN yarn build
+
+ENTRYPOINT ["wait-for-postgres.sh"]
 
 CMD ["yarn", "run", "start:prod"]
