@@ -80,7 +80,7 @@ COPY .env.example .env
 
 # Make the wait-for-postgres.sh script executable
 RUN chmod +x docker/scripts/wait-for-postgres.sh
-RUN /docker/scripts/wait-for-postgres.sh "$POSTGRES_HOST" "$POSTGRES_USER"
+RUN /docker/scripts/wait-for-postgres.sh "db" "postgres"
 # Build production image
 RUN yarn prisma migrate deploy --preview-feature
 RUN yarn prisma generate
