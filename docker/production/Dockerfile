@@ -62,18 +62,32 @@
 # CMD [ "node", "dist/main.js" ]
 
 FROM node:18-alpine as dependencies
+
+# Set working directory
 WORKDIR /app
+
+# Copy package.json and yarn.lock to work directory
 COPY package.json ./
-RUN yarn install
+
+# Install dependencies
+RUN yarn install --frozen-lockfile
+
+# Copy other project files
+COPY . .
+
+# Copy environment file
 COPY .env.example .env
-COPY . . 
+
+# Make the wait-for-postgres.sh script executable
+RUN chmod +x docker/scripts/wait-for-postgres.sh
 
 # Build production image
-RUN chmod +x docker/production/scripts/wait-for-postgres.sh
 RUN yarn prisma migrate deploy --preview-feature
 RUN yarn prisma generate
 RUN yarn build
 
-ENTRYPOINT ["wait-for-postgres.sh"]
+# Set the entrypoint to wait-for-postgres.sh
+ENTRYPOINT ["docker/scripts/wait-for-postgres.sh"]
 
+# Set default command to start the server
 CMD ["yarn", "run", "start:prod"]
