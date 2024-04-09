@@ -69,7 +69,7 @@ COPY . .
 COPY .env.example .env
 # Build production image
 
-# RUN yarn prisma migrate deploy --preview-feature
+RUN yarn prisma migrate deploy --preview-feature
 RUN yarn prisma generate
 RUN yarn build
 
