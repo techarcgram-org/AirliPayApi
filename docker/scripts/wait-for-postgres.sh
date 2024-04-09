@@ -9,6 +9,7 @@ set -e
 # shift
 cmd="$@"
 
+
 # Set the host and port to check
 HOST="db"
 PORT="5432"
@@ -19,8 +20,9 @@ check_port() {
 }
 
 # Check if the port is open
-until $PG_READY; do
-  >&2 echo "Port $PORT on host $HOST is not yet ready to receive connections."
+
+until check_port "$HOST" "$PORT"; do
+  >&2 echo "Postgres is unavailable - sleeping"
   sleep 1
 done
   
