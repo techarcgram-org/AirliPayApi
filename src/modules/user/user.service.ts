@@ -403,18 +403,43 @@ export class UserService {
     return user;
   }
 
-  async listBanks(): Promise<banks[]> {
-    let banks: banks[];
+  async listBanks(user_id: number) {
+    let user_banks;
+    console.log('user_id', user_id);
     try {
-      banks = await this.prismaService.banks.findMany();
+      user_banks = await this.prismaService.user_banks.findMany({
+        where: {
+          user_id,
+        },
+      });
     } catch (error) {
       this.logger.error(`${logPrefix()} ${error}`);
       throw new HttpException(
-        `server error: ${error}`,
+        `Error getting user banks: ${error}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-    return banks;
+    return user_banks;
+  }
+
+  async listMomoAccounts(user_id: number) {
+    let momoAccounts;
+    console.log('user_id', user_id);
+    try {
+      momoAccounts =
+        await this.prismaService.user_mobile_money_accounts.findMany({
+          where: {
+            user_id,
+          },
+        });
+    } catch (error) {
+      this.logger.error(`${logPrefix()} ${error}`);
+      throw new HttpException(
+        `Error getting user momo accounts: ${error}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+    return momoAccounts;
   }
 
   async listUserBanks(user: UserSession): Promise<any[]> {
@@ -577,6 +602,20 @@ export class UserService {
     let updatedUserData;
     try {
       if (updateUserDto.userBanksId) {
+        try {
+          await this.prismaService.user_banks.findFirst({
+            where: {
+              id: updateUserDto.userBanksId,
+            },
+          });
+        } catch (error) {
+          this.logger.error(`${logPrefix()} ${error}`);
+          throw new HttpException(
+            `User bank not found`,
+            HttpStatus.INTERNAL_SERVER_ERROR,
+          );
+        }
+
         await this.prismaService.user_banks.update({
           where: {
             id: updateUserDto.userBanksId,
@@ -595,9 +634,12 @@ export class UserService {
         data: {
           name: updateUserDto.name,
           base_salary: updateUserDto.baseSalary,
-          next_payment_date: updateUserDto.nextPaymentDate,
+          next_payment_date: moment(
+            updateUserDto.nextPaymentDate,
+            'DD-MM-YYY',
+          ).format(),
           received_earlypay: updateUserDto.receivedEarlyPay,
-          dob: updateUserDto.dob,
+          dob: moment(updateUserDto.dob, 'DD-MM-YYY').format(),
           photo: updateUserDto.photo,
           sex: updateUserDto.sex,
           updated_at: moment().format(),

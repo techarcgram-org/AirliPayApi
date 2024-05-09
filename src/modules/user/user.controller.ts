@@ -145,9 +145,18 @@ export class UsersController {
     );
   }
 
-  @Get('/list-banks')
-  async listBanks() {
-    return await this.usersService.listBanks();
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  @Get(':user_id/list-banks')
+  async listBanks(@Param('id') user_id: number) {
+    return await this.usersService.listBanks(user_id);
+  }
+
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  @Get(':id/list-momo-accounts')
+  async listMomoAccounts(@Param('id') id: number) {
+    return await this.usersService.listMomoAccounts(id);
   }
 
   @UseGuards(AuthGuard)
