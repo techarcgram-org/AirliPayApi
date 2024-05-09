@@ -646,6 +646,7 @@ export class UserService {
           accounts: {
             update: {
               account_status: updateUserDto.accountStatus,
+              phone_confirmed: updateUserDto.phoneConfirmed,
               updated_at: moment().format(),
             },
           },

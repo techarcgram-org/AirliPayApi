@@ -115,4 +115,10 @@ export class UpdateUserDto {
     description: 'Employees current bank account',
   })
   accountStatus: account_status_types;
+
+  @ApiProperty({
+    type: 'bool',
+    description: 'update if user is confirmed or not',
+  })
+  phoneConfirmed: boolean;
 }
