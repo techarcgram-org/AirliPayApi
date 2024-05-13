@@ -19,6 +19,7 @@ import {
   logPrefix,
 } from 'src/common/utils/util';
 import { Prisma, banks } from '@prisma/client';
+import { UpdatePhoneDto } from './dto/update-phone.dto';
 
 @Injectable()
 export class UserService {
@@ -634,12 +635,13 @@ export class UserService {
         data: {
           name: updateUserDto.name,
           base_salary: updateUserDto.baseSalary,
-          next_payment_date: moment(
-            updateUserDto.nextPaymentDate,
-            'DD-MM-YYY',
-          ).format(),
+          next_payment_date: updateUserDto.nextPaymentDate
+            ? moment(updateUserDto.nextPaymentDate, 'DD-MM-YYY').format()
+            : updateUserDto.nextPaymentDate,
           received_earlypay: updateUserDto.receivedEarlyPay,
-          dob: moment(updateUserDto.dob, 'DD-MM-YYY').format(),
+          dob: updateUserDto.dob
+            ? moment(updateUserDto.dob, 'DD-MM-YYY').format()
+            : updateUserDto.dob,
           photo: updateUserDto.photo,
           sex: updateUserDto.sex,
           updated_at: moment().format(),
@@ -676,6 +678,51 @@ export class UserService {
     }
 
     return updatedUserData;
+  }
+
+  async updatePhoneConfirmed(id: number, updatePhoneDto: UpdatePhoneDto) {
+    let user = await this.prismaService.users.findFirst({
+      where: { id },
+    });
+    // Check if the user exists
+    if (!user) {
+      this.logger.error(
+        `${logPrefix()} Error updating User: User with id: ${id} not found`,
+      );
+      throw new HttpException(
+        `Error updating User: User with id: ${id} not found`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    try {
+      user = await this.prismaService.users.update({
+        where: {
+          id,
+        },
+        data: {
+          accounts: {
+            update: {
+              phone_confirmed: updatePhoneDto.phoneConfirmed,
+              updated_at: moment().format(),
+            },
+          },
+        },
+        include: {
+          accounts: true,
+        },
+      });
+    } catch (error) {
+      this.logger.error(
+        `${logPrefix()} Error updating User phone confirmation: ${error}`,
+      );
+      throw new HttpException(
+        `Error updating User phone confirmation: ${error}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    return user;
   }
 
   async remove(id: number) {

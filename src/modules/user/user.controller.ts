@@ -32,6 +32,7 @@ import { BuldCreateUserDto } from './dto/bulk-create-user.dto';
 import { ListTransactionDto } from '../airlipay-balance/dto/list-transaction.dto';
 import { AirlipayBalanceService } from '../airlipay-balance/airlipay-balance.service';
 import { ACGuard, UseRoles, UserRoles } from 'nest-access-control';
+import { UpdatePhoneDto } from './dto/update-phone.dto';
 
 @Controller('users')
 export class UsersController {
@@ -171,9 +172,19 @@ export class UsersController {
     return this.usersService.getAirlipays(+id);
   }
 
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(+id, updateUserDto);
+  }
+
+  @Patch(':id/phoneConfirmation')
+  updateUserPhone(
+    @Param('id') id: string,
+    @Body() updatePhoneDto: UpdatePhoneDto,
+  ) {
+    return this.usersService.updatePhoneConfirmed(+id, updatePhoneDto);
   }
 
   @Delete(':id')
