@@ -1,12 +1,10 @@
 pipeline {
-    def buildNumber = env.BUILD_NUMBER as int
-    if (buildNumber > 1) milestone(buildNumber - 1)
-    milestone(buildNumber)
-    
     agent any
+    options {
+        disableConcurrentBuilds()
+    }
     environment {
         CI = 'true'
-
     }
     stages {
         stage('Build') {
@@ -17,6 +15,21 @@ pipeline {
         stage('Deliver') {
             steps {
                 sh 'docker compose -f docker/production/docker-compose.yml up --force-recreate'
+            }
+        }
+    }
+    post {
+        always {
+            script {
+                def currentBuildNumber = currentBuild.number
+                def currentJobName = env.JOB_NAME
+                def buildQueue = Jenkins.instance.getItemByFullName(currentJobName).builds.findAll { it.number != currentBuildNumber }
+                buildQueue.each { build ->
+                    if (build.isBuilding()) {
+                        println "Aborting build ${build.number}"
+                        build.doStop()
+                    }
+                }
             }
         }
     }
