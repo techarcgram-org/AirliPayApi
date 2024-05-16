@@ -323,6 +323,7 @@ model invoices {
   from              DateTime
   to                DateTime
   taxes             Decimal
+  transactions      Json?
   created_at        DateTime            @db.Timestamp(6)
   updated_at        DateTime            @db.Timestamp(6)
   client            clients             @relation(fields: [client_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_08c702b978")

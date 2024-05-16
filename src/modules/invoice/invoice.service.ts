@@ -83,9 +83,16 @@ export class InvoiceService {
   async generateInvoice() {
     const endDate = moment().format();
     const startDate = moment().subtract(2, 'd').format();
+
     let clients;
     try {
       clients = await this.prismaService.clients.findMany({
+        where: {
+          next_payment_date: {
+            gt: moment().startOf('day').format(),
+            lte: moment().endOf('day').format(),
+          },
+        },
         include: {
           users: {
             include: {
@@ -95,6 +102,7 @@ export class InvoiceService {
                     gte: startDate, // Greater than or equal to the start date
                     lt: endDate, // Less than or equal to the end date
                   },
+                  transaction_type: transaction_types.WITHDRAW,
                 },
               },
             },
@@ -131,11 +139,19 @@ export class InvoiceService {
       const invoiceNumber = `${datePrefix}-${nextInvoiceNumber
         .toString()
         .padStart(4, '0')}`; // YYYY-MM-DD-0001
+      let transactObj;
       users.forEach((user) => {
         const transactions = user.early_transactions;
+
         transactions.forEach((transaction) => {
           totalAmount += transaction.amount;
           totalFee += transaction.fees;
+        });
+        transactObj.append({
+          userId: user.id,
+          name: user.name,
+          baseSalary: user.base_salary,
+          transactions: transactions,
         });
       });
       try {
@@ -149,10 +165,20 @@ export class InvoiceService {
             from: startDate,
             to: endDate,
             taxes: 0,
+            transactions: transactObj,
             created_at: moment().format(),
             updated_at: moment().format(),
           },
         });
+
+        client.update({
+          data: {
+            next_payment_date: moment(client.next_payment_date).add(30, 'days'),
+          },
+        });
+        this.logger.debug(
+          `Invoice for client ${client.name} with ID: ${client.id} generated successfully`,
+        );
       } catch (error) {
         this.logger.error(`${logPrefix()} ${error}`);
         throw new HttpException(
