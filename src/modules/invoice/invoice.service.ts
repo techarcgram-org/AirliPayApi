@@ -79,7 +79,7 @@ export class InvoiceService {
   }
 
   // @Cron(CronExpression.EVERY_HOUR)
-  @Cron('0 0 */1 * * 1-5', { name: 'invoiceGenerateJob' })
+  @Cron('0 0 0 * * 1-5', { name: 'invoiceGenerateJob' })
   async generateInvoice() {
     const endDate = moment().format();
     const startDate = moment().subtract(2, 'd').format();
