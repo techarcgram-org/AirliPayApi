@@ -7,6 +7,7 @@ import {
   UseGuards,
   Res,
   HttpStatus,
+  Param,
 } from '@nestjs/common';
 import { AccountSettingsService } from './account-settings.service';
 import { UpdateAccountSettingDto } from './dto/update-account-setting.dto';
@@ -48,17 +49,17 @@ export class AccountSettingsController {
   //   return this.accountSettingsService.findOne(+id);
   // }
 
-  @Patch('')
+  @Patch(':id/update')
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
   async update(
+    @Param('id') user_id: string,
     @Res({ passthrough: true }) res,
     @Body() updateAccountSettingDto: UpdateAccountSettingDto,
-    @GetUser() user: UserSession,
   ) {
     const result = await this.accountSettingsService.update(
       updateAccountSettingDto,
-      user.sub,
+      Number(user_id),
     );
     if (!result) {
       return formatResponse(result, res, HttpStatus.BAD_REQUEST);

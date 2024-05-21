@@ -49,4 +49,10 @@ export class UpdateAccountSettingDto {
     description: 'enable users two factor authentication',
   })
   two_fa_enabled: boolean;
+
+  @ApiProperty({
+    type: 'string',
+    description: 'The device of the currently logged in user',
+  })
+  device_id: string;
 }

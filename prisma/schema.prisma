@@ -141,6 +141,7 @@ model users {
   savings_transactions       savings_transactions[]
   user_banks                 user_banks[]
   user_mobile_money_accounts user_mobile_money_accounts[]
+  notifications              notifications[]
   accounts                   accounts                     @relation(fields: [account_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_61ac11da2b")
   clients                    clients                      @relation(fields: [client_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_d3559eaf4c")
   addresses                  addresses                    @relation(fields: [address_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_eb2fc738e4")
@@ -205,6 +206,7 @@ model account_settings {
   default_bank_id            BigInt?
   default_momo_account_id    BigInt?
   user_id                    BigInt
+  device_id                  String?                     @db.VarChar
   created_at                 DateTime                    @db.Timestamp(6)
   updated_at                 DateTime                    @db.Timestamp(6)
   user_banks                 user_banks?                 @relation(fields: [default_bank_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_68404ac0af")
@@ -332,12 +334,32 @@ model invoices {
   @@index([status])
 }
 
+model notifications {
+  id                BigInt              @id @default(autoincrement())
+  user_id           BigInt
+  title             String              @db.VarChar
+  message           String              @db.VarChar
+  device_id         String?              @db.VarChar
+  status            notification_status
+  created_at        DateTime            @db.Timestamp(6)
+  updated_at        DateTime            @db.Timestamp(6)
+  user              users               @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_08c002b928")
+
+  @@index([user_id])
+}
+
 enum transaction_types {
   WITHDRAW
   DEPOSIT
 }
 
 enum withdrawal_status {
+  SUCCESS
+  PENDING
+  FAILED
+}
+
+enum notification_status {
   SUCCESS
   PENDING
   FAILED

@@ -25,14 +25,19 @@ import {
   TransactionType,
 } from 'src/common/constants';
 import * as moment from 'moment';
-import { airlipay_balances, early_transactions } from '@prisma/client';
+import {
+  airlipay_balances,
+  early_transactions,
+  notification_status,
+} from '@prisma/client';
 import { UpdateAirlipayBalanceDto } from './dto/update-airlipay-balance.dto';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import currency from 'currency.js';
 import { ListTransactionDto } from './dto/list-transaction.dto';
 import { IsPhoneNumber } from 'class-validator';
 import { PusherService } from 'src/core/pusher/pusher.service';
-
+import { NotificationService } from 'src/core/notification/notification.service';
+import { NotificationType } from 'src/common/types/types..type';
 @Injectable()
 export class AirlipayBalanceService {
   constructor(
@@ -40,6 +45,7 @@ export class AirlipayBalanceService {
     private paymentService: PaymentService,
     private logger: Logger,
     private pusherService: PusherService,
+    private notificationService: NotificationService,
   ) {}
 
   async getUserBalance(user_id: number): Promise<airlipay_balances> {
@@ -326,6 +332,7 @@ export class AirlipayBalanceService {
   // @Cron(CronExpression.EVERY_HOUR)
   @Cron('0 0 */1 * * 1-5', { name: 'balanceUpdateJob' })
   async updateBalance() {
+    const notifications: NotificationType[] = [];
     try {
       const users = await this.prismaService.users.findMany();
       users.forEach(async (user) => {
@@ -361,23 +368,36 @@ export class AirlipayBalanceService {
             },
           });
           this.logger.log(`Airlipay Added to ${user.name}`);
-          // try {
-          //   const channel = PusherChannels.PAYMENT_SUCCESS + `-${user.id}`;
-          //   const data = {
-          //     amount: biHourlyPay,
-          //     user: user.id,
-          //     type: PusherEvents.EARLYPAY_TOPUP_SUCCESS,
-          //   };
-          //   await this.pusherService.trigger(
-          //     'my-channel',
-          //     PusherEvents.EARLYPAY_TOPUP_SUCCESS,
-          //     data,
-          //   );
-          // } catch (error) {
-          //   this.logger.debug(
-          //     `Failed to trigger pusher event: ${error?.message}`,
-          //   );
-          // }
+
+          // preparing notification messages
+          const { device_id } =
+            await this.prismaService.account_settings.findFirst({
+              where: {
+                user_id: user.id,
+              },
+              select: {
+                device_id: true,
+              },
+            });
+
+          notifications.push({
+            to: device_id,
+            sound: 'default',
+            title: `Airlipay Balance`,
+            body: `${biHourlyPay} added to your Airlipay`,
+          });
+
+          await this.prismaService.notifications.create({
+            data: {
+              title: `Airlipay Balance`,
+              message: `${biHourlyPay} added to your Airlipay`,
+              user_id: user.id,
+              status: notification_status.PENDING,
+              device_id: device_id,
+              created_at: moment().format(),
+              updated_at: moment().format(),
+            },
+          });
         }
       });
     } catch (error) {
@@ -387,5 +407,7 @@ export class AirlipayBalanceService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+    // Sending actual notifications
+    await this.notificationService.sendNotification(notifications);
   }
 }
