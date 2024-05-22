@@ -4,10 +4,7 @@ import { NotificationType } from 'src/common/types/types..type';
 
 @Injectable()
 export class NotificationService {
-  constructor(
-    private expoPushService: ExpoPushService,
-    private logger: Logger,
-  ) {}
+  constructor(private expoPushService: ExpoPushService) {}
 
   sendNotification(messages: NotificationType[]) {
     this.expoPushService.sendNotification(messages);

@@ -7,7 +7,7 @@ import * as moment from 'moment';
 import { Cron } from '@nestjs/schedule';
 import { InvoiceStatus, TransactionType } from 'src/common/constants';
 import { ListInvoicesDto } from './dto/list-invoices.dto';
-import { transaction_types } from '@prisma/client';
+import { transaction_types, invoice_status } from '@prisma/client';
 
 @Injectable()
 export class InvoiceService {
@@ -78,19 +78,40 @@ export class InvoiceService {
     return transactions;
   }
 
-  // @Cron(CronExpression.EVERY_HOUR)
-  @Cron('0 0 0 * * 1-5', { name: 'invoiceGenerateJob' })
-  async generateInvoice() {
-    const endDate = moment().format();
-    const startDate = moment().subtract(2, 'd').format();
+  // this is going to update the invoice status
+  async updateInvoiceStatus(
+    invoice_id: number,
+    updateInvoiceDto: UpdateInvoiceDto,
+  ) {
+    try {
+      return await this.prismaService.invoices.update({
+        where: {
+          id: invoice_id,
+        },
+        data: {
+          status: updateInvoiceDto.status,
+        },
+      });
+    } catch (error) {
+      this.logger.error(`${logPrefix()} ${error}`);
+      throw new HttpException(
+        `Error updating invoice status  ${error}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 
+  // @Cron(CronExpression.EVERY_HOUR)
+  @Cron('0 0 0 * * *', { name: 'invoiceGenerateJob' })
+  async generateInvoice() {
+    const startDate = moment().subtract(1, 'days').startOf('day').format();
+    const endDate = moment().subtract(1, 'days').endOf('day').format();
     let clients;
     try {
       clients = await this.prismaService.clients.findMany({
         where: {
           next_payment_date: {
-            gt: moment().startOf('day').format(),
-            lte: moment().endOf('day').format(),
+            equals: moment().format('YYYY-MM-DD') + 'T00:00:00.000Z',
           },
         },
         include: {
@@ -116,13 +137,13 @@ export class InvoiceService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-
     clients.forEach(async (client) => {
       const users = client.users;
       let totalAmount = 0;
       let totalFee = 0;
       const datePrefix = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
       let lastInvoice;
+
       try {
         lastInvoice = await this.prismaService.invoices.findFirst({
           orderBy: { id: 'desc' },
@@ -171,9 +192,14 @@ export class InvoiceService {
           },
         });
 
-        client.update({
+        await this.prismaService.clients.update({
+          where: {
+            id: client.id,
+          },
           data: {
-            next_payment_date: moment(client.next_payment_date).add(30, 'days'),
+            next_payment_date: moment(client.next_payment_date)
+              .add(1, 'days')
+              .format(),
           },
         });
         this.logger.debug(

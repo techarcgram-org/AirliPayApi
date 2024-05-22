@@ -6,16 +6,11 @@ import { PaymentModule } from 'src/core/payment/payment.module';
 import { PusherService } from 'src/core/pusher/pusher.service';
 import { AppConfigModule } from 'src/config/config.module';
 import { NotificationService } from 'src/core/notification/notification.service';
+import { NotificationModule } from 'src/core/notification/notification.module';
 @Module({
-  imports: [PaymentModule, AppConfigModule],
+  imports: [PaymentModule, AppConfigModule, NotificationModule],
   controllers: [AirlipayBalanceController],
-  providers: [
-    AirlipayBalanceService,
-    PrismaService,
-    Logger,
-    PusherService,
-    NotificationService,
-  ],
+  providers: [AirlipayBalanceService, PrismaService, Logger, PusherService],
   exports: [AirlipayBalanceService],
 })
 export class AirlipayBalanceModule {}

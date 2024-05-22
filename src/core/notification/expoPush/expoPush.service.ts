@@ -20,7 +20,6 @@ export class ExpoPushService {
       'Content-Type': 'application/json',
       // 'expo-push-token': process.env.EXPO_PUSH_TOKEN,
     };
-
     try {
       const response: AxiosResponse = await axios.post(
         `${this.expoUrl}/api/v2/push/send`,

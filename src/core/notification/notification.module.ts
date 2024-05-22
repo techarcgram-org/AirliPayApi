@@ -4,7 +4,7 @@ import { NotificationService } from './notification.service';
 
 @Module({
   imports: [],
-  providers: [ExpoPushService, Logger],
+  providers: [NotificationService, ExpoPushService, Logger],
   exports: [NotificationService],
 })
 export class NotificationModule {}

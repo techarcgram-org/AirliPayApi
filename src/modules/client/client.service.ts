@@ -36,7 +36,10 @@ export class ClientService {
           tax_id: createClientDto.taxId,
           client_commision: createClientDto.clientCommision,
           // earning_report_status: createClientDto.earning_report_status,
-          next_payment_date: nextPaydate,
+          next_payment_date: moment(
+            createClientDto.nextPaymentDate,
+            'YYYY-MM-DD',
+          ).format(),
           employee_roaster_file: file?.filename || null,
           accounts: {
             create: {
@@ -212,6 +215,10 @@ export class ClientService {
     }
 
     let updatedClientData;
+    const nextPaymentDate = moment(
+      updateClientDto.nextPaydate,
+      'YYYY-MM-DD',
+    ).format();
     try {
       updatedClientData = await this.prismaService.clients.update({
         where: {
@@ -223,7 +230,7 @@ export class ClientService {
           tax_id: updateClientDto.taxId,
           client_commision: updateClientDto.clientCommision,
           // earning_report_status: createClientDto.earning_report_status,
-          next_payment_date: updateClientDto.nextPaydate,
+          next_payment_date: nextPaymentDate,
           employee_roaster_file: file?.filename || null,
           updated_at: moment().format(),
           accounts: {

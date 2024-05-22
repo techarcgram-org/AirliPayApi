@@ -44,7 +44,6 @@ export class AirlipayBalanceService {
     private prismaService: PrismaService,
     private paymentService: PaymentService,
     private logger: Logger,
-    private pusherService: PusherService,
     private notificationService: NotificationService,
   ) {}
 
@@ -332,16 +331,17 @@ export class AirlipayBalanceService {
   // @Cron(CronExpression.EVERY_HOUR)
   @Cron('0 0 */1 * * 1-5', { name: 'balanceUpdateJob' })
   async updateBalance() {
-    const notifications: NotificationType[] = [];
     try {
+      const notifications: NotificationType[] = [];
       const users = await this.prismaService.users.findMany();
-      users.forEach(async (user) => {
+      for (const user of users) {
         const biHourlyPay = (user.base_salary as any) / 2 / 20 / 24;
         const balance = await this.prismaService.airlipay_balances.findFirst({
           where: {
             user_id: user.id,
           },
         });
+
         if (balance) {
           await this.prismaService.airlipay_balances.update({
             where: {
@@ -367,6 +367,7 @@ export class AirlipayBalanceService {
               updated_at: moment().format(),
             },
           });
+
           this.logger.log(`Airlipay Added to ${user.name}`);
 
           // preparing notification messages
@@ -399,7 +400,8 @@ export class AirlipayBalanceService {
             },
           });
         }
-      });
+      }
+      await this.notificationService.sendNotification(notifications);
     } catch (error) {
       this.logger.error(`error ${error}`);
       throw new HttpException(
@@ -408,6 +410,5 @@ export class AirlipayBalanceService {
       );
     }
     // Sending actual notifications
-    await this.notificationService.sendNotification(notifications);
   }
 }

@@ -1,8 +1,18 @@
-import { Controller, Get, Post, Body, UseGuards, Param } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  UseGuards,
+  Param,
+  Patch,
+} from '@nestjs/common';
 import { InvoiceService } from './invoice.service';
 import { ListInvoicesDto } from './dto/list-invoices.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { UpdateUserDto } from '../user/dto/update-user.dto';
+import { UpdateInvoiceDto } from './dto/update-invoice.dto';
 
 @Controller('invoice')
 export class InvoiceController {
@@ -20,5 +30,15 @@ export class InvoiceController {
   @Get(':id/transactions')
   async allInvoiceTransactions(@Param('id') id: number) {
     return await this.invoiceService.invoiceTransactions(id);
+  }
+
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  @Patch(':id/update-status')
+  async updateInvoiceStatus(
+    @Param('id') id: number,
+    @Body() updateInvoiceDto: UpdateInvoiceDto,
+  ) {
+    return await this.invoiceService.updateInvoiceStatus(id, updateInvoiceDto);
   }
 }

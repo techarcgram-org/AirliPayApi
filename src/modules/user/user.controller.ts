@@ -174,6 +174,13 @@ export class UsersController {
 
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
+  @Get('/:id/notifications')
+  getAllNotifications(@Param('id') id) {
+    return this.usersService.getNotifications(+id);
+  }
+
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(+id, updateUserDto);

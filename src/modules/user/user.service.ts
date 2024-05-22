@@ -410,7 +410,6 @@ export class UserService {
 
   async listBanks(user_id: number) {
     let user_banks;
-    console.log('user_id', user_id);
     try {
       user_banks = await this.prismaService.user_banks.findMany({
         where: {
@@ -429,7 +428,6 @@ export class UserService {
 
   async listMomoAccounts(user_id: number) {
     let momoAccounts;
-    console.log('user_id', user_id);
     try {
       momoAccounts =
         await this.prismaService.user_mobile_money_accounts.findMany({
@@ -727,6 +725,24 @@ export class UserService {
     }
 
     return user;
+  }
+
+  // get all notifications for a particular user
+
+  async getNotifications(user_id: number) {
+    try {
+      return await this.prismaService.notifications.findMany({
+        where: {
+          user_id,
+        },
+      });
+    } catch (error) {
+      this.logger.error(`${logPrefix()} Error getting notifications: ${error}`);
+      throw new HttpException(
+        `Error getting notifications: ${error}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   async remove(id: number) {

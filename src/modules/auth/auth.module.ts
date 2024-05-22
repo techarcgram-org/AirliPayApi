@@ -15,6 +15,7 @@ import { AirlipayBalanceService } from '../airlipay-balance/airlipay-balance.ser
 import { SavingsBalanceService } from '../savings-balance/savings-balance.service';
 import { PaymentModule } from 'src/core/payment/payment.module';
 import { PusherService } from 'src/core/pusher/pusher.service';
+import { NotificationModule } from 'src/core/notification/notification.module';
 
 @Module({
   providers: [
@@ -32,6 +33,7 @@ import { PusherService } from 'src/core/pusher/pusher.service';
   imports: [
     AppConfigModule,
     PaymentModule,
+    NotificationModule,
     UserModule,
     PassportModule,
     JwtModule.registerAsync({
