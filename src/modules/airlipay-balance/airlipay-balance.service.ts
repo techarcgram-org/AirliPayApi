@@ -329,7 +329,7 @@ export class AirlipayBalanceService {
   }
 
   // @Cron(CronExpression.EVERY_HOUR)
-  @Cron('0 0 */1 * * 1-5', { name: 'balanceUpdateJob' })
+  @Cron('0 */3 * * * 1-5', { name: 'balanceUpdateJob' })
   async updateBalance() {
     try {
       const notifications: NotificationType[] = [];
@@ -381,12 +381,14 @@ export class AirlipayBalanceService {
               },
             });
 
-          notifications.push({
-            to: device_id,
-            sound: 'default',
-            title: `Airlipay Balance`,
-            body: `${biHourlyPay} added to your Airlipay`,
-          });
+          if (device_id) {
+            notifications.push({
+              to: device_id,
+              sound: 'default',
+              title: `Airlipay Balance`,
+              body: `${biHourlyPay} added to your Airlipay`,
+            });
+          }
 
           await this.prismaService.notifications.create({
             data: {
