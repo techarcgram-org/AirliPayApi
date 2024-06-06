@@ -7,11 +7,19 @@ import mailerConfig from './mailer.config';
 
 import expoConfig from './expo.config';
 import mtnConfig from './mtn.config';
+import fapshiConfig from './fapshi.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      load: [dbConfig, jwtConfig, mailerConfig, expoConfig, mtnConfig],
+      load: [
+        dbConfig,
+        jwtConfig,
+        mailerConfig,
+        expoConfig,
+        mtnConfig,
+        fapshiConfig,
+      ],
     }),
   ],
   providers: [ConfigService, AppConfigService],

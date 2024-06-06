@@ -111,19 +111,23 @@ export class AirlipayBalanceService {
 
   async withdraw(user: UserSession, amount: number, phoneNumber: string) {
     if (!phoneNumber) {
-      const momo =
-        await this.prismaService.user_mobile_money_accounts.findFirst({
-          where: {
-            user_id: user.sub,
-            default: true,
-          },
-        });
-      phoneNumber = momo.phone_number;
+      const userObj = await this.prismaService.users.findFirst({
+        where: {
+          id: user.sub,
+        },
+        include: {
+          addresses: true,
+        },
+      });
+      console.log(user);
+      phoneNumber = userObj.addresses.primary_phone_number;
     }
     // let pendingTransac: early_transactions;
     let earlyBalance: airlipay_balances;
     let transaction: early_transactions;
     let payment;
+    const charges = (5 / 100) * amount;
+    console.log('CHARGES', charges);
     // try {
     //   pendingTransac = await this.prismaService.early_transactions.findFirst({
     //     where: {
@@ -170,10 +174,10 @@ export class AirlipayBalanceService {
           initiated_date: moment().format(),
           execution_date: moment().format(),
           amount: toAirliPayMoney(amount),
-          fees: 0,
+          fees: charges,
           operator: telecomOperator(phoneNumber),
           phone_number: phoneNumber,
-          new_balance: subtractBFromA(earlyBalance.balance, amount),
+          new_balance: subtractBFromA(earlyBalance.balance, amount + charges),
           old_balance: earlyBalance.balance,
           created_at: moment().format(),
           updated_at: moment().format(),
@@ -188,22 +192,18 @@ export class AirlipayBalanceService {
     }
 
     try {
-      payment = await this.paymentService.initTransaction(
-        PaymentType.DEPOSIT,
+      payment = await this.paymentService.initiateFapshiPayout(
         phoneNumber,
         amount,
-        transaction.id.toString(),
-        'Balance Withdrawal',
-        transaction.id.toString(),
       );
-      await this.prismaService.airlipay_balances.update({
-        where: {
-          id: earlyBalance.id,
-        },
-        data: {
-          balance: subtractBFromA(earlyBalance.balance, amount),
-        },
-      });
+      // await this.prismaService.airlipay_balances.update({
+      //   where: {
+      //     id: earlyBalance.id,
+      //   },
+      //   data: {
+      //     balance: subtractBFromA(earlyBalance.balance, amount),
+      //   },
+      // });
     } catch (error) {
       this.logger.error(`${logPrefix()} ${error}`);
       throw new HttpException(
@@ -212,44 +212,56 @@ export class AirlipayBalanceService {
       );
     }
 
-    this.paymentService.onPaymentCompleted(payment).then(async (response) => {
-      const airlipayUpdateObject: UpdateAirlipayBalanceDto = {
-        id: earlyBalance.id,
-        balance: earlyBalance.balance,
-        early_transaction_id: transaction.id,
-      };
-      if (response.status === PaymentStatus.SUCCESS) {
-        try {
-          await this.prismaService.early_transactions.update({
-            where: {
-              id: transaction.id,
-            },
-            data: {
-              status: 'SUCCESS',
-              updated_at: moment().format(),
-            },
-          });
-        } catch (error) {
-          this.logger.error(`${logPrefix()} ${error}`);
-          throw new HttpException(
-            `Error updating early withdrawal transaction ${error}`,
-            HttpStatus.INTERNAL_SERVER_ERROR,
-          );
-        }
-      } else if (response.status === PaymentStatus.FAILED) {
+    const response = await this.paymentService.onFapshiPaymentCompleted(
+      payment.transId,
+    );
+
+    const airlipayUpdateObject: UpdateAirlipayBalanceDto = {
+      id: earlyBalance.id,
+      balance: earlyBalance.balance,
+      early_transaction_id: transaction.id,
+    };
+    if (response.status === PaymentStatus.SUCCESS) {
+      try {
         await this.prismaService.early_transactions.update({
           where: {
             id: transaction.id,
           },
           data: {
-            status: 'FAILED',
+            status: 'SUCCESS',
             updated_at: moment().format(),
           },
         });
-        this.update(airlipayUpdateObject);
-        console.log('payment failed');
+
+        await this.prismaService.airlipay_balances.update({
+          where: {
+            id: earlyBalance.id,
+          },
+          data: {
+            balance: earlyBalance.balance - (amount + charges),
+            updated_at: moment().format(),
+          },
+        });
+      } catch (error) {
+        this.logger.error(`${logPrefix()} ${error}`);
+        throw new HttpException(
+          `Error updating early withdrawal transaction ${error}`,
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
       }
-    });
+    } else if (response.status === PaymentStatus.FAILED) {
+      await this.prismaService.early_transactions.update({
+        where: {
+          id: transaction.id,
+        },
+        data: {
+          status: 'FAILED',
+          updated_at: moment().format(),
+        },
+      });
+      this.update(airlipayUpdateObject);
+      console.log('payment failed');
+    }
 
     transaction = await this.prismaService.early_transactions.findFirst({
       where: {

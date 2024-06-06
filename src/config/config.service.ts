@@ -6,6 +6,7 @@ import { JWTConfig } from './jwt.config';
 import { AppConfig } from './app.config';
 import { MtnConfig } from './mtn.config';
 import { PusherConfig } from './pusher.config';
+import { FapshiConfig } from './fapshi.config';
 
 @Injectable()
 export class AppConfigService {
@@ -65,6 +66,14 @@ export class AppConfigService {
       callbackUrl,
       currency,
     };
+  }
+
+  get fapshi(): FapshiConfig {
+    const apiUser = this.configService.get<string>('fapshi.apiUser');
+    const apiKey = this.configService.get<string>('fapshi.apiKey');
+    const apiUrl = this.configService.get<string>('fapshi.apiUrl');
+
+    return { apiUser, apiKey, apiUrl };
   }
 
   get jwt(): JWTConfig {

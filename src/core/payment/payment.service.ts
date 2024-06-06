@@ -8,12 +8,14 @@ import { MtnService } from './mtn/mtn.service';
 import { telecomOperator } from '../../common/utils/util';
 import { Payment } from './Payment';
 import { logPrefix, delay } from '../../common/utils/util';
+import { FapshiService } from './fapshi/fapshi.service';
 
 @Injectable()
 export class PaymentService {
   constructor(
     private logger: Logger,
     private mtnService: MtnService, // @InjectRepository(MobileMoneyAccessControl) // private accessControlRepo: Repository<MobileMoneyAccessControl>, // private mailService: MailService, // private appConfigService: AppConfigService, // private adminService: AdminService,
+    private fapshiService: FapshiService,
   ) {}
 
   async fetchTransaction(
@@ -65,14 +67,108 @@ export class PaymentService {
         } catch (error) {
           throw new HttpException(error?.message, error?.status);
         }
+
       default:
         throw new Error('unknown telecom operator');
     }
   }
 
+  async initiateFapshiPayout(
+    phone: string,
+    amount: number,
+    medium?: string,
+    name?: string,
+    email?: string,
+    userId?: string,
+  ) {
+    const fapshiPayment = await this.fapshiService.initiatePayout(
+      phone,
+      amount,
+      medium,
+      name,
+      email,
+      userId,
+    );
+    return fapshiPayment;
+  }
+
   // async getAccessControl(): Promise<MobileMoneyAccessControl> {
   //   return this.accessControlRepo.findOneBy({});
   // }
+
+  async onFapshiPaymentCompleted(transactionId: string) {
+    let i = 0;
+    let status: PaymentStatus;
+    let maxChecks = 20;
+    let response;
+    let exceptionCount = 0;
+    let lastException: any;
+    for (; i < maxChecks; i++) {
+      try {
+        response = await this.fapshiService.paymentStatus(transactionId);
+        console.log('RESPONSE', response);
+      } catch (e) {
+        this.logger.error(`${logPrefix()} Error fetching transaction: ${e}`);
+        if (lastException === e) {
+          exceptionCount++;
+        } else {
+          lastException = e;
+          exceptionCount = 1;
+        }
+        if (exceptionCount >= 5) {
+          // 5 consecutive exceptions have occurred. Break out of the loop.
+          break;
+        }
+      }
+
+      status = response.status;
+
+      if (
+        status &&
+        status !== PaymentStatus.PENDING &&
+        status &&
+        status !== PaymentStatus.CREATED
+      ) {
+        break;
+      }
+
+      if (i < 10) {
+        // For the first checks, wait for 60 seconds
+        await delay(60000);
+      } else if (i >= 10) {
+        // After 10 checks, wait for 1 hour
+        await delay(120000);
+      } else {
+        // For all other checks, wait for 2 minutes
+        await delay(120000);
+      }
+
+      // If there is only one retry left and we have not exceeded the maximum number of checks, increase the maximum number of checks by 24
+      const remainingRetries = maxChecks - i - 1;
+      if (remainingRetries === 1 && i < 33) {
+        maxChecks += 24;
+      }
+    }
+
+    // timeout reached. Assume tx has failed.
+    if (i >= maxChecks && status === PaymentStatus.PENDING) {
+      status = PaymentStatus.FAILED;
+    }
+    if (status === PaymentStatus.FAILED) {
+      status = PaymentStatus.FAILED;
+    }
+    if (status === PaymentStatus.EXPIRED) {
+      status = PaymentStatus.FAILED;
+    }
+    response.status = status;
+    if (
+      response.status.toString() == 'SUCCESSFUL' ||
+      response.status.toString() == 'SUCCESSFULL'
+    ) {
+      response.status = PaymentStatus.SUCCESS;
+    }
+    return response;
+  }
 
   async onPaymentCompleted(payment: Payment) {
     let i = 0;

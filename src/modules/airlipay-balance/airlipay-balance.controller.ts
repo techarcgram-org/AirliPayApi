@@ -51,4 +51,9 @@ export class AirlipayBalanceController {
       listTransactionDto,
     );
   }
+
+  @Get('/fapshi_webhook')
+  async fatshiResponse(@Res({ passthrough: true }) res, @Body() body: any) {
+    console.log(body), console.log(res);
+  }
 }
