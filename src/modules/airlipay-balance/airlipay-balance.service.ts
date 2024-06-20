@@ -276,12 +276,10 @@ export class AirlipayBalanceService {
     user: any,
     listTransactionDto: ListTransactionDto,
   ): Promise<early_transactions[]> {
-    const { status, type, page } = listTransactionDto;
+    let { status, type, page, pageSize } = listTransactionDto;
     let transactions;
     let where = {};
-    const pageSize = listTransactionDto.pageSize
-      ? listTransactionDto.pageSize
-      : 15;
+    pageSize = pageSize ? pageSize : 15;
     if (user?.roles?.includes('USER')) {
       where = { ...where, user_id: user.sub };
     }
@@ -291,6 +289,7 @@ export class AirlipayBalanceService {
     if (listTransactionDto.type) {
       where = { ...where, transaction_type: type };
     }
+    console.log('WHERE', where, listTransactionDto);
     try {
       transactions = this.prismaService.early_transactions.findMany({
         where,
@@ -341,11 +340,12 @@ export class AirlipayBalanceService {
   }
 
   // @Cron(CronExpression.EVERY_HOUR)
-  @Cron('0 0 */1 * * 1-5', { name: 'balanceUpdateJob' })
+  @Cron('0 */5 * * * 1-5', { name: 'balanceUpdateJob' })
   async updateBalance() {
     try {
       const notifications: NotificationType[] = [];
       const users = await this.prismaService.users.findMany();
+      console.log('USERS', users);
       for (const user of users) {
         const biHourlyPay = (user.base_salary as any) / 2 / 20 / 24;
         const balance = await this.prismaService.airlipay_balances.findFirst({

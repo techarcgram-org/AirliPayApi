@@ -44,7 +44,9 @@ export class ClientService {
           accounts: {
             create: {
               email: createClientDto.email,
-              encrypted_password: generatePasswordHash('Testing'),
+              encrypted_password: generatePasswordHash(
+                createClientDto.password,
+              ),
               account_type: Role.CLIENT,
               created_at: moment().format(),
               updated_at: moment().format(),
@@ -215,10 +217,9 @@ export class ClientService {
     }
 
     let updatedClientData;
-    const nextPaymentDate = moment(
-      updateClientDto.nextPaydate,
-      'YYYY-MM-DD',
-    ).format();
+    const nextPaymentDate = updateClientDto.nextPaydate
+      ? moment(updateClientDto.nextPaydate, 'YYYY-MM-DD').format()
+      : undefined;
     try {
       updatedClientData = await this.prismaService.clients.update({
         where: {
