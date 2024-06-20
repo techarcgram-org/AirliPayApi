@@ -340,7 +340,7 @@ export class AirlipayBalanceService {
   }
 
   // @Cron(CronExpression.EVERY_HOUR)
-  @Cron('0 */5 * * * 1-5', { name: 'balanceUpdateJob' })
+  @Cron('0 0 */1 * * 1-5', { name: 'balanceUpdateJob' })
   async updateBalance() {
     try {
       const notifications: NotificationType[] = [];
