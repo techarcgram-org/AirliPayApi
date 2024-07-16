@@ -4,7 +4,7 @@ import { UpdateAdminDto } from './dto/update-admin.dto';
 import { AccountStatus, Role } from 'src/common/constants';
 import * as moment from 'moment';
 import { PrismaService } from 'src/common/services/prisma.service';
-import { Prisma } from '@prisma/client';
+import { Prisma, account_status_types } from '@prisma/client';
 import { generatePasswordHash, logPrefix } from 'src/common/utils/util';
 
 @Injectable()
@@ -119,6 +119,9 @@ export class AdminService {
   async update(id: number, updateAdminDto: UpdateAdminDto) {
     const admin = await this.prismaService.admins.findFirst({
       where: { id },
+      include: {
+        accounts: true,
+      },
     });
     // Check if the client exists
     if (!admin) {
@@ -133,6 +136,12 @@ export class AdminService {
 
     let updatedAdminData;
     try {
+      let activation_date: Date | null;
+      if (updateAdminDto.accountStatus === account_status_types.ACTIVE) {
+        if (!admin.accounts.activation_date) {
+          activation_date = new Date();
+        }
+      }
       updatedAdminData = await this.prismaService.admins.update({
         where: {
           id,
@@ -145,6 +154,7 @@ export class AdminService {
             update: {
               account_status: updateAdminDto.accountStatus,
               updated_at: moment().format(),
+              activation_date: activation_date,
             },
           },
           addresses: {

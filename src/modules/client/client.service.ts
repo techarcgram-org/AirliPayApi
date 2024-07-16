@@ -11,7 +11,7 @@ import {
 } from 'src/common/utils/util';
 import * as moment from 'moment';
 import { MailService } from 'src/core/mail/mail.service';
-import { Prisma } from '@prisma/client';
+import { Prisma, account_status_types } from '@prisma/client';
 import { Cron } from '@nestjs/schedule';
 import { CreateClientBankDto } from './dto/create-client-bank.dto';
 
@@ -204,6 +204,9 @@ export class ClientService {
   ) {
     const client = await this.prismaService.clients.findFirst({
       where: { id },
+      include: {
+        accounts: true,
+      },
     });
     // Check if the client exists
     if (!client) {
@@ -221,6 +224,12 @@ export class ClientService {
       ? moment(updateClientDto.nextPaydate, 'YYYY-MM-DD').format()
       : undefined;
     try {
+      let activation_date: Date | null;
+      if (updateClientDto.accountStatus === account_status_types.ACTIVE) {
+        if (!client.accounts.activation_date) {
+          activation_date = new Date();
+        }
+      }
       updatedClientData = await this.prismaService.clients.update({
         where: {
           id,
@@ -238,6 +247,7 @@ export class ClientService {
             update: {
               account_status: updateClientDto.accountStatus,
               updated_at: moment().format(),
+              activation_date: activation_date,
             },
           },
           addresses: {
