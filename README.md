@@ -49,12 +49,12 @@ $ yarn test:cov
 
 ## Migrations
 
-# 2. Initialize Prisma (if not initialized)
+# Initialize Prisma (if not initialized)
 ```
 npx prisma init
 ```
 
-# 5. Create and run migrations
+# Create and run migrations
 ```
 npx prisma migrate dev -- <name of migration here> init
 ```
