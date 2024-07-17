@@ -1,76 +1,94 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
-
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
-
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
-
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+API for AIRLIPAY
+
+[![Build and Deploy (stage)](https://github.com/nkwa/api-nest/actions/workflows/stage.yaml/badge.svg)](https://github.com/nkwa/api-nest/actions/workflows/stage.yaml) [![Run e2e test](https://github.com/nkwa/api-nest/actions/workflows/index.yaml/badge.svg)](https://github.com/nkwa/api-nest/actions/workflows/index.yaml) [![Deploy (production)](https://github.com/nkwa/api-nest/actions/workflows/deploy-prod.yaml/badge.svg)](https://github.com/nkwa/api-nest/actions/workflows/deploy-prod.yaml)
+
+## Access
+
+The staging server can be accessed [here]() 
+
+The staging server logs for staging can be access on Grafana [here]()
+
+```
+username: leroi
+password: -YLDwuF7ffVz0-DU
+```
 
 ## Installation
 
 ```bash
-$ npm install
+$ yarn install
 ```
 
 ## Running the app
 
 ```bash
 # development
-$ npm run start
+$ yarn start
 
 # watch mode
-$ npm run start:dev
+$ yarn start:dev
 
 # production mode
-$ npm run start:prod
+$ yarn start:prod
 ```
 
 ## Test
 
 ```bash
 # unit tests
-$ npm run test
+$ yarn test
 
 # e2e tests
-$ npm run test:e2e
+$ yarn test:e2e
 
 # test coverage
-$ npm run test:cov
+$ yarn test:cov
 ```
 
-## Support
+## Migrations
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+# 2. Initialize Prisma (if not initialized)
+```
+npx prisma init
+```
 
-## Stay in touch
+# 5. Create and run migrations
+```
+npx prisma migrate dev -- <name of migration here> init
+```
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+```
+npx prisma migrate deploy
+```
 
-## License
+## Local dev with Docker-compose
 
-Nest is [MIT licensed](LICENSE).
+Install Docker Desktop and Docker Compose
 
-docker build -t ailipayapi .
-https://adevait.com/google-cloud-platform/deploying-serverless-containers-using-google-cloud-run
+Start the dev server:
+
+```
+npm run docker:dev:start
+```
+
+To run migrations:
+
+```
+npm run docker:compose:migrate:up
+```
+
+## How to deploy to Prod
+
+To create a new release, perform the following actions:
+
+- Create a pull-request to merge develop into master with title `chore: merge develop into master`
+- Merge the PR in step (1) above.
+- When anything is merged to master, a semantic release bot will create a release and tag it.
+- Once the new release is created, an automatic deploy action is triggered.
+  You can monitor the release deploy using the actions tab [here]()
+
+🤝 **How to contribute**
+
+If you want to contribute, please refer to our Contribution Guide: [Contribution Guide](https://github.com/techarcgram-org/AirliPayApi/blob/main/GUIDELINES.md).
