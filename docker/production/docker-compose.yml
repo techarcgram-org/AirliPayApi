@@ -12,9 +12,7 @@ services:
       - postgres_network
 
   app:
-    build:
-      context: ../../
-      dockerfile: docker/production/Dockerfile
+    image: ghcr.io/techarcgram-org:main
     container_name: airlipay-api
     ports:
       - '3000:3000'
@@ -24,6 +22,39 @@ services:
       - ./src:/app/src
     networks:
       - postgres_network
+    labels:
+      logging: 'promtail'
+      logging_jobname: 'containerlogs'
+    environment:
+      DATABASE_URL: postgresql://postgres:@localhost:5432/airlipay?schema=public
+      MAIL_SERVICE: gmail
+      MAIL_USER: tafodinho@gmail.com
+      MAIL_PASSWORD: ilccmebnylukfbml
+      MAIL_FROM: noreply@example.com
+
+      JWT_SECRET: kjskdfjklasjdlkfjasdf
+      JWT_SIGNIN_DURATION: 60m
+
+      SERVICE_PORT: 3001
+      ENVIROMENT: dev
+
+      MTN_TARGET_ENVIRONMENT: sandbox
+      MTN_COLLECTION_SUBSCRIPTION_KEY: aa87bf08ba0f4cdf928524b741b4d02a
+      MTN_DISBURSEMENT_SUBSCRIPTION_KEY: 82d7ce8826a6496d8167ab3e68153838
+      MTN_BASE_URL: https://sandbox.momodeveloper.mtn.com
+      MTN_USER_ID_COLLECTION: aa87bf08ba0f4cdf928524b741b4d02a
+      MTN_API_KEY_COLLECTION: 922643941dc948aab440d91f618dc25e
+      MTN_USER_ID_DISBURSEMENT: 4d034bc6-e8c8-40d1-9da9-9ae18813baf2
+      MTN_API_KEY_DISBURSEMENT: 086e9785454540d98331f5fa52a0ea01
+      MTN_CURRENCY: EUR
+      MTN_CALLBACK_URL: #
+
+      PUSHER_APP_ID: 1680835
+      PUSHER_APP_SECRET: 4ee03dd4e4884d6bbd2f
+      PUSHER_KEY: 2b4e44db46f3ce40661d
+      PUSHER_WS_HOST: soketi.airlipay.com
+      PUSHER_USE_TLS: true
+      PUSHER_CLUSTER: mt1
 
   pgadmin:
     image: dpage/pgadmin4
@@ -42,9 +73,56 @@ services:
     networks:
       - postgres_network
 
+  # Promtail service
+  promtail:
+    container_name: promtail
+    image: grafana/promtail
+    volumes:
+      - ./promtail-config.yaml:/app/promtail-config.yaml
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: -config.file=/app/promtail-config.yaml
+    networks:
+      - postgres_network
+    depends_on:
+      - loki
+
+  # Loki service
+  loki:
+    container_name: loki
+    image: grafana/loki
+    ports:
+      - '3100:3100'
+    command: -config.file=/app/local-config.yaml
+    networks:
+      - postgres_network
+    volumes:
+      - ./loki-config.yaml:/app/local-config.yaml
+
+  # Grafana service
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - '3200:3000'
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+      - GF_AUTH_ANONYMOUS_ENABLED=false
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+    networks:
+      - postgres_network
+
 networks:
   postgres_network:
     driver: bridge
     ipam:
       config:
         - subnet: 172.19.0.0/16
+
+volumes:
+  grafana-data:
+    driver: local
