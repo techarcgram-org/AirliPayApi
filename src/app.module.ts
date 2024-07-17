@@ -15,6 +15,7 @@ import { RBAC_POLICY } from './modules/auth/rbac-policy';
 import { ClientModule } from './modules/client/client.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { InvoiceModule } from './modules/invoice/invoice.module';
+import { CronjobsModule } from './modules/cronjobs/cronjobs.module';
 @Module({
   imports: [
     AppConfigModule,
@@ -30,6 +31,7 @@ import { InvoiceModule } from './modules/invoice/invoice.module';
     ClientModule,
     AdminModule,
     InvoiceModule,
+    CronjobsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
