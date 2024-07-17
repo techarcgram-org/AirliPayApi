@@ -95,7 +95,6 @@ RUN yarn build
 COPY dist ./dist
 COPY src ./src
 COPY tsconfig.json ./tsconfig.json
-COPY public ./public
 
 # Set the entrypoint to wait-for-postgres.sh
 
