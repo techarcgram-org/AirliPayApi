@@ -76,7 +76,7 @@ RUN yarn install
 COPY . .
 
 # Copy environment file
-COPY .env.example .env
+# COPY .env.example .env
 # Build production image
 # Make the wait-for-postgres.sh script executable
 # RUN chmod +x docker/scripts/wait-for-postgres.sh
