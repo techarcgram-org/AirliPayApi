@@ -92,7 +92,6 @@ COPY prisma ./prisma
 
 RUN yarn build
 
-COPY dist ./dist
 COPY src ./src
 COPY tsconfig.json ./tsconfig.json
 
