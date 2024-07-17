@@ -5,6 +5,8 @@ services:
     restart: unless-stopped
     environment:
       - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=airlipay_test
     user: '${UID}:${GID}' # Ensure UID and GID are set in your environment
     volumes:
       - /home/techarcgram/pgdata:/var/lib/postgresql/data
@@ -26,7 +28,7 @@ services:
       logging: 'promtail'
       logging_jobname: 'containerlogs'
     environment:
-      DATABASE_URL: postgresql://postgres:@localhost:5432/airlipay?schema=public
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/airlipay_test?schema=public
       MAIL_SERVICE: gmail
       MAIL_USER: tafodinho@gmail.com
       MAIL_PASSWORD: ilccmebnylukfbml
