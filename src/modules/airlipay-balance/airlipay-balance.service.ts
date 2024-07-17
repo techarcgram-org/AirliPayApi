@@ -280,7 +280,8 @@ export class AirlipayBalanceService {
     user: any,
     listTransactionDto: ListTransactionDto,
   ): Promise<early_transactions[]> {
-    let { status, type, page, pageSize } = listTransactionDto;
+    const { status, type, page } = listTransactionDto;
+    let { pageSize } = listTransactionDto;
     let transactions;
     let where = {};
     pageSize = pageSize ? pageSize : 15;

@@ -1,0 +1,64 @@
+# instead of deploying latest, lets rework this later to use tags
+name: Deploy (production)
+env:
+  REGISTRY: rg.fr-par.scw.cloud/apiv2
+  IMAGE_NAME: api-nest
+  REGISTRY_USERNAME: nologin
+on:
+  push:
+    tags:
+      - "v[1-9]+.[0-9]+.[0-9]+"
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🏗 Setup repo
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Fetch Tags
+        run: |
+          git fetch --prune --unshallow --tags -f
+
+      - name: Inject slug/short variables
+        uses: rlespinasse/github-slug-action@v4.4.1
+        with:
+          short-length: 8 # Same as v3 and before
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to Scaleway Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ env.REGISTRY_USERNAME }}
+          password: ${{ secrets.SC_REGISTRY_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: infra/prod/Dockerfile.prod
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+      - name: Slack Notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_CHANNEL: ci
+          SLACK_USERNAME: GitHub Actions
+          SLACK_TITLE: "Deploy Production API"
+          SLACK_MESSAGE: "Deploying Production API with version ${{ github.ref_name }}"
+          SLACK_WEBHOOK: ${{ secrets.BECKS_SLACK_WEBHOOK_URL }}
+  
+      - name: Deploy docker container webhook
+        uses: joelwmale/webhook-action@master
+        env:
+          WEBHOOK_URL: ${{ secrets.DEPLOY_WEBHOOK_URL  }}
+          data: "{ 'myField': 'myFieldValue'}"
