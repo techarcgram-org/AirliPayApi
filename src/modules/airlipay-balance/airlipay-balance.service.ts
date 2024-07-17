@@ -55,11 +55,15 @@ export class AirlipayBalanceService {
           user_id: user_id,
         },
       });
+
+      if (!balance) {
+        balance = await this.create(user_id);
+      }
     } catch (error) {
       this.logger.error(`${logPrefix()} ${error}`);
       throw new HttpException(
-        `Error gettting airlipay balance for user ${error}`,
-        HttpStatus.NOT_FOUND,
+        `Error getting airlipay balance for user ${error}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
     return balance;

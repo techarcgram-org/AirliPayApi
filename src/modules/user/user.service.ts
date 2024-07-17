@@ -18,7 +18,7 @@ import {
   generatePasswordHash,
   logPrefix,
 } from 'src/common/utils/util';
-import { Prisma, banks } from '@prisma/client';
+import { Prisma, account_status_types, banks } from '@prisma/client';
 import { UpdatePhoneDto } from './dto/update-phone.dto';
 
 @Injectable()
@@ -590,6 +590,9 @@ export class UserService {
   async update(id: number, updateUserDto: UpdateUserDto) {
     const user = await this.prismaService.users.findFirst({
       where: { id },
+      include: {
+        accounts: true,
+      },
     });
     // Check if the user exists
     if (!user) {
@@ -630,6 +633,12 @@ export class UserService {
           },
         });
       }
+      let activation_date: Date | null;
+      if (updateUserDto.accountStatus === account_status_types.ACTIVE) {
+        if (!user.accounts.activation_date) {
+          activation_date = new Date();
+        }
+      }
       updatedUserData = await this.prismaService.users.update({
         where: {
           id,
@@ -652,6 +661,7 @@ export class UserService {
               account_status: updateUserDto.accountStatus,
               phone_confirmed: updateUserDto.phoneConfirmed,
               updated_at: moment().format(),
+              activation_date: activation_date,
             },
           },
           addresses: {
