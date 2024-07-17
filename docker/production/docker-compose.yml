@@ -1,18 +1,18 @@
 services:
   db:
     image: postgres
+    container_name: airlipay-postgres
     restart: unless-stopped
     environment:
       - POSTGRES_PASSWORD=postgres
-    container_name: postgres
-    user: '${UID}:${GID}'
+    user: '${UID}:${GID}' # Ensure UID and GID are set in your environment
     volumes:
       - /home/techarcgram/pgdata:/var/lib/postgresql/data
     networks:
       - postgres_network
 
   app:
-    image: ghcr.io/techarcgram-org:main
+    image: ghcr.io/techarcgram-org/airlipay-api:deploy
     container_name: airlipay-api
     ports:
       - '3000:3000'
@@ -58,14 +58,14 @@ services:
 
   pgadmin:
     image: dpage/pgadmin4
+    container_name: airlipay-pgadmin4
     restart: unless-stopped
-    container_name: pgadmin4
     environment:
       - PGADMIN_DEFAULT_EMAIL=admin@admin.com
       - PGADMIN_DEFAULT_PASSWORD=pgadmin4
     ports:
       - '5050:80'
-    user: '${UID}:${GID}'
+    user: '${UID}:${GID}' # Ensure UID and GID are set in your environment
     volumes:
       - /home/techarcgram/pgadmin-data:/var/lib/pgadmin
     depends_on:
@@ -73,10 +73,9 @@ services:
     networks:
       - postgres_network
 
-  # Promtail service
   promtail:
-    container_name: promtail
     image: grafana/promtail
+    container_name: airlipay-promtail
     volumes:
       - ./promtail-config.yaml:/app/promtail-config.yaml
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
@@ -87,10 +86,9 @@ services:
     depends_on:
       - loki
 
-  # Loki service
   loki:
-    container_name: loki
     image: grafana/loki
+    container_name: airlipay-loki
     ports:
       - '3100:3100'
     command: -config.file=/app/local-config.yaml
@@ -99,10 +97,9 @@ services:
     volumes:
       - ./loki-config.yaml:/app/local-config.yaml
 
-  # Grafana service
   grafana:
     image: grafana/grafana
-    container_name: grafana
+    container_name: airlipay-grafana
     restart: unless-stopped
     ports:
       - '3200:3000'

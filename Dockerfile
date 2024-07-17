@@ -83,8 +83,19 @@ COPY ../../.env.example .env
 # RUN docker/scripts/wait-for-postgres.sh
 
 # RUN yarn prisma migrate deploy --preview-feature
-RUN yarn prisma generate
+# Generate Prisma client
+RUN npx prisma generate
+
+# Copy Prisma schema
+COPY prisma ./prisma
+
+
 RUN yarn build
+
+COPY app/dist ./dist
+COPY src ./src
+COPY tsconfig.json ./tsconfig.json
+COPY public ./public
 
 # Set the entrypoint to wait-for-postgres.sh
 
