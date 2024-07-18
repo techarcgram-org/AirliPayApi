@@ -109,12 +109,16 @@ export class InvoiceService {
 
     const startDate = moment().subtract(1, 'days').startOf('day').format();
     const endDate = moment().subtract(1, 'days').endOf('day').format();
+    const dateLimit = moment().format('YYYY-MM-DD') + 'T00:00:00.000Z';
     let clients;
     try {
+      this.logger.log(
+        `Fetching all clients with payment date scheduled on or before: ${dateLimit}`,
+      );
       clients = await this.prismaService.clients.findMany({
         where: {
           next_payment_date: {
-            lt: moment().format('YYYY-MM-DD') + 'T00:00:00.000Z',
+            lte: dateLimit,
           },
         },
         include: {
@@ -214,7 +218,7 @@ export class InvoiceService {
           .add(1, 'days')
           .format();
 
-        console.log(next_payment_date);
+        console.log(`Scheduled next payment date: ${next_payment_date}`);
 
         await this.prismaService.clients.update({
           where: {
@@ -225,7 +229,7 @@ export class InvoiceService {
           },
         });
         this.logger.debug(
-          `Invoice for client ${client.name} with ID: ${client.id} generated successfully`,
+          `The next payment date for client ${client.name} with ID: ${client.id} has been updated to: ${next_payment_date}`,
         );
       } catch (error) {
         this.logger.error(`${logPrefix()} ${error}`);
