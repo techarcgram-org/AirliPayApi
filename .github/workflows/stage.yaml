@@ -69,4 +69,4 @@ jobs:
             cd deployment
             docker stop airlipay-api
             docker pull ghcr.io/techarcgram-org/airlipay-api:deploy
-            docker start --name airlipay-api airlipay-api
+            docker compose up -d
