@@ -118,7 +118,7 @@ export class InvoiceService {
       clients = await this.prismaService.clients.findMany({
         where: {
           next_payment_date: {
-            equals: dateLimit,
+            lte: dateLimit,
           },
         },
         include: {
@@ -215,7 +215,7 @@ export class InvoiceService {
         );
 
         const next_payment_date = moment(client.next_payment_date)
-          .add(1, 'days')
+          .add(21, 'days')
           .format();
 
         console.log(`Scheduled next payment date: ${next_payment_date}`);
