@@ -142,7 +142,7 @@ export class InvoiceService {
     }
 
     this.logger.log(
-      `${logPrefix()} - The total amount of clients to update information for: ${
+      `${logPrefix()} - The total clients to generate invoice for: ${
         clients.length
       }`,
     );
@@ -169,7 +169,12 @@ export class InvoiceService {
       const invoiceNumber = `${datePrefix}-${nextInvoiceNumber
         .toString()
         .padStart(4, '0')}`; // YYYY-MM-DD-0001
-      let transactObj;
+      let transactObj: Array<{
+        userId: any;
+        name: any;
+        baseSalary: any;
+        transactions: any;
+      }>;
       users.forEach((user) => {
         const transactions = user.early_transactions;
 
@@ -177,7 +182,7 @@ export class InvoiceService {
           totalAmount += transaction.amount;
           totalFee += transaction.fees;
         });
-        transactObj.append({
+        transactObj.push({
           userId: user.id,
           name: user.name,
           baseSalary: user.base_salary,
@@ -222,7 +227,5 @@ export class InvoiceService {
         );
       }
     });
-
-    this.logger.debug(`${logPrefix()} - Completed invoice generation`);
   }
 }
