@@ -114,7 +114,7 @@ export class InvoiceService {
       clients = await this.prismaService.clients.findMany({
         where: {
           next_payment_date: {
-            lt: moment().format('YYYY-MM-DD'),
+            lt: moment().format('YYYY-MM-DD') + 'T00:00:00.000Z',
           },
         },
         include: {
