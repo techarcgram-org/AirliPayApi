@@ -8,6 +8,7 @@ import { Cron } from '@nestjs/schedule';
 import { InvoiceStatus, TransactionType } from 'src/common/constants';
 import { ListInvoicesDto } from './dto/list-invoices.dto';
 import { transaction_types, invoice_status } from '@prisma/client';
+import { Client } from '../client/entities/client.entity';
 
 @Injectable()
 export class InvoiceService {
@@ -113,7 +114,7 @@ export class InvoiceService {
       clients = await this.prismaService.clients.findMany({
         where: {
           next_payment_date: {
-            equals: moment().format('YYYY-MM-DD') + 'T00:00:00.000Z',
+            lt: moment().format('YYYY-MM-DD'),
           },
         },
         include: {
@@ -139,6 +140,12 @@ export class InvoiceService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+
+    this.logger.log(
+      `${logPrefix()} - The total amount of clients to update information for: ${
+        clients.length
+      }`,
+    );
     clients.forEach(async (client) => {
       const users = client.users;
       let totalAmount = 0;

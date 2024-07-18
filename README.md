@@ -2,17 +2,18 @@
 
 API for AIRLIPAY
 
-[![Build and Deploy (stage)](https://github.com/nkwa/api-nest/actions/workflows/stage.yaml/badge.svg)](https://github.com/nkwa/api-nest/actions/workflows/stage.yaml) [![Run e2e test](https://github.com/nkwa/api-nest/actions/workflows/index.yaml/badge.svg)](https://github.com/nkwa/api-nest/actions/workflows/index.yaml) [![Deploy (production)](https://github.com/nkwa/api-nest/actions/workflows/deploy-prod.yaml/badge.svg)](https://github.com/nkwa/api-nest/actions/workflows/deploy-prod.yaml)
 
 ## Access
 
-The staging server can be accessed [here]() 
+The staging server can be accessed [here](http://195.154.118.26:3000/) 
 
-The staging server logs for staging can be access on Grafana [here]()
+The staging server logs for staging can be access on Grafana [here](http://195.154.118.26:3200/)
 
 ```
-username: leroi
-password: -YLDwuF7ffVz0-DU
+username: admin
+```
+```
+password: admin
 ```
 
 ## Installation
