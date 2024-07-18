@@ -215,7 +215,7 @@ export class InvoiceService {
         );
 
         const next_payment_date = moment(client.next_payment_date)
-          .add(21, 'days')
+          .add(1, 'days')
           .format();
 
         console.log(`Scheduled next payment date: ${next_payment_date}`);
