@@ -102,8 +102,10 @@ export class InvoiceService {
   }
 
   // @Cron(CronExpression.EVERY_HOUR)
-  @Cron('0 0 0 * * *', { name: 'invoiceGenerateJob' })
+  // @Cron('0 0 0 * * *', { name: 'invoiceGenerateJob' })
   async generateInvoice() {
+    this.logger.debug(`${logPrefix()} => CRON to generate invoice has started`);
+
     const startDate = moment().subtract(1, 'days').startOf('day').format();
     const endDate = moment().subtract(1, 'days').endOf('day').format();
     let clients;
@@ -213,5 +215,7 @@ export class InvoiceService {
         );
       }
     });
+
+    this.logger.debug(`${logPrefix()} - Completed invoice generation`);
   }
 }

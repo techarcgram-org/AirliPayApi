@@ -348,6 +348,7 @@ export class AirlipayBalanceService {
   // @Cron('0 0 */1 * * 1-5', { name: 'balanceUpdateJob' })
   async updateBalance() {
     try {
+      this.logger.debug(`${logPrefix()} => CRON to update balance has started`);
       const notifications: NotificationType[] = [];
       const users = await this.prismaService.users.findMany();
       console.log('USERS', users);
@@ -388,19 +389,18 @@ export class AirlipayBalanceService {
           this.logger.log(`Airlipay Added to ${user.name}`);
 
           // preparing notification messages
-          const { device_id } =
-            await this.prismaService.account_settings.findFirst({
-              where: {
-                user_id: user.id,
-              },
-              select: {
-                device_id: true,
-              },
-            });
+          const userInfo = await this.prismaService.account_settings.findFirst({
+            where: {
+              user_id: user.id,
+            },
+            select: {
+              device_id: true,
+            },
+          });
 
-          if (device_id) {
+          if (userInfo?.device_id) {
             notifications.push({
-              to: device_id,
+              to: userInfo?.device_id,
               sound: 'default',
               title: `Airlipay Balance`,
               body: `${biHourlyPay} added to your Airlipay`,
@@ -413,7 +413,7 @@ export class AirlipayBalanceService {
               message: `${biHourlyPay} added to your Airlipay`,
               user_id: user.id,
               status: notification_status.PENDING,
-              device_id: device_id,
+              device_id: userInfo?.device_id,
               created_at: moment().format(),
               updated_at: moment().format(),
             },
@@ -422,7 +422,7 @@ export class AirlipayBalanceService {
       }
       await this.notificationService.sendNotification(notifications);
     } catch (error) {
-      this.logger.error(`error ${error}`);
+      this.logger.error(`${logPrefix} - error ${error}`);
       throw new HttpException(
         `Server error: ${error}`,
         HttpStatus.INTERNAL_SERVER_ERROR,

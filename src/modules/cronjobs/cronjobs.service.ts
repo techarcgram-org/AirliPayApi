@@ -10,12 +10,12 @@ export class CronjobsService {
     private invoiceService: InvoiceService,
   ) {}
 
-  @Cron(CronExpression.EVERY_HOUR, { name: 'balanceUpdateJob' })
+  @Cron(CronExpression.EVERY_10_MINUTES, { name: 'balanceUpdateJob' })
   async updateAirlipayBalances() {
     this.airlipayBalanceService.updateBalance();
   }
 
-  @Cron(CronExpression.EVERY_HOUR, { name: 'invoiceGenerateJob' })
+  @Cron(CronExpression.EVERY_10_MINUTES, { name: 'invoiceGenerateJob' })
   async generateInvoice() {
     this.invoiceService.generateInvoice();
   }
