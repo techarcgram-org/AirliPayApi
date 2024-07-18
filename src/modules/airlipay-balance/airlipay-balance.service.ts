@@ -351,7 +351,10 @@ export class AirlipayBalanceService {
       this.logger.debug(`${logPrefix()} => CRON to update balance has started`);
       const notifications: NotificationType[] = [];
       const users = await this.prismaService.users.findMany();
-      console.log('USERS', users);
+      this.logger.log(
+        `${logPrefix()} - Users to update balance count: `,
+        users,
+      );
       for (const user of users) {
         const biHourlyPay = (user.base_salary as any) / 2 / 20 / 24;
         const balance = await this.prismaService.airlipay_balances.findFirst({
@@ -421,6 +424,9 @@ export class AirlipayBalanceService {
         }
       }
       await this.notificationService.sendNotification(notifications);
+      this.logger.log(
+        `${logPrefix()} => CRON to update balance has complete successfully`,
+      );
     } catch (error) {
       this.logger.error(`${logPrefix} - error ${error}`);
       throw new HttpException(
