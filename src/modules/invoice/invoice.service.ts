@@ -118,7 +118,7 @@ export class InvoiceService {
       clients = await this.prismaService.clients.findMany({
         where: {
           next_payment_date: {
-            lte: dateLimit,
+            equals: dateLimit,
           },
         },
         include: {
