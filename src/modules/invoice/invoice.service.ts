@@ -174,7 +174,7 @@ export class InvoiceService {
         name: any;
         baseSalary: any;
         transactions: any;
-      }>;
+      }> = [];
       users.forEach((user) => {
         const transactions = user.early_transactions;
 
