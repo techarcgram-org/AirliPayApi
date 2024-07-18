@@ -48,6 +48,7 @@
     "n-digit-token": "^2.2.0",
     "nest-access-control": "^3.1.0",
     "nest-csv-parser": "^2.0.4",
+    "nest-winston": "^1.9.7",
     "nodemailer": "^6.9.1",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.1",
@@ -60,7 +61,8 @@
     "stream-to-promise": "^3.0.0",
     "swagger-ui-express": "^4.6.3",
     "typeorm": "^0.3.12",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "winston": "^3.13.1"
   },
   "devDependencies": {
     "@nestjs/cli": "^9.0.0",

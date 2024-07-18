@@ -4,12 +4,19 @@ import * as multer from 'multer';
 
 import { AppModule } from './app.module';
 import 'src/common/lib/bingint';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, Logger } from '@nestjs/common';
 import { AppConfigService } from './config/config.service';
 import { TrimPipe } from './common/pipes/trim.pipe';
+import { WinstonModule } from 'nest-winston';
+import { loggerConfig } from './config/logger.config';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    bufferLogs: true,
+    logger: WinstonModule.createLogger({
+      instance: loggerConfig,
+    }),
+  });
   const appConfig: AppConfigService = app.get(AppConfigService);
 
   app.useGlobalPipes(
@@ -24,10 +31,17 @@ async function bootstrap() {
     .setDescription('AirliPay Api Docs')
     .setVersion('1.0')
     .build();
+  const logger = app.get(Logger);
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
   app.enableCors();
-  await app.listen(appConfig.app.servicePort || 8004);
+  await app.listen(appConfig.app.servicePort || 8004, () => {
+    logger.log(
+      `🚀 ====> Application running on port: ${
+        appConfig.app.servicePort || 8004
+      }`,
+    );
+  });
   // await app.listen(3000);
 }
 bootstrap();
