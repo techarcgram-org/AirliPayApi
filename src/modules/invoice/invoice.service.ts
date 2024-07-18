@@ -206,14 +206,22 @@ export class InvoiceService {
           },
         });
 
+        this.logger.debug(
+          `Invoice for client ${client.name} with ID: ${client.id} generated successfully`,
+        );
+
+        const next_payment_date = moment(client.next_payment_date)
+          .add(1, 'days')
+          .format();
+
+        console.log(next_payment_date);
+
         await this.prismaService.clients.update({
           where: {
             id: client.id,
           },
           data: {
-            next_payment_date: moment(client.next_payment_date)
-              .add(1, 'days')
-              .format(),
+            next_payment_date: next_payment_date,
           },
         });
         this.logger.debug(
