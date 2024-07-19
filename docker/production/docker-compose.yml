@@ -59,6 +59,19 @@ services:
       PUSHER_USE_TLS: true
       PUSHER_CLUSTER: mt1
 
+  dashboard:
+    image: ghcr.io/techarcgram-org/airlipay-dashboard:dev
+    container_name: airlipay-dashboard
+    environment:
+      NEXT_PUBLIC_BASE_URL: http://195.154.118.26:3000
+    ports:
+      - '3001:3001'
+    networks:
+      - postgres_network
+    labels:
+      logging: 'promtail'
+      logging_jobname: 'dashboardlogs'
+
   pgadmin:
     image: dpage/pgadmin4
     container_name: airlipay-pgadmin4
