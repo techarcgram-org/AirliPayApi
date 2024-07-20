@@ -138,7 +138,7 @@ export class UsersController {
   @Get('/:user_id/transactions')
   async listUserTransactions(
     @Param('user_id') user_id: number,
-    @Body() listTransactionDto: ListTransactionDto,
+    @Query() listTransactionDto: ListTransactionDto,
   ) {
     return await this.airlipayBalanceService.listUserWithdrawalTransactions(
       user_id,
