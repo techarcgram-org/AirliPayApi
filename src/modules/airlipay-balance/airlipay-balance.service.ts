@@ -300,6 +300,7 @@ export class AirlipayBalanceService {
         where,
         skip: page ? (page - 1) * pageSize : undefined,
         take: pageSize,
+        orderBy: { id: 'desc' },
       });
     } catch (error) {
       this.logger.error(`error ${error}`);
