@@ -6,6 +6,7 @@ import {
   UseGuards,
   Get,
   Param,
+  Query,
 } from '@nestjs/common';
 import { AirlipayBalanceService } from './airlipay-balance.service';
 
@@ -43,7 +44,7 @@ export class AirlipayBalanceController {
   @Get('/transactions')
   async listTransactions(
     @Res({ passthrough: true }) res,
-    @Body() listTransactionDto: ListTransactionDto,
+    @Query() listTransactionDto: ListTransactionDto,
     @GetUser() user: any,
   ) {
     return await this.airlipayBalanceService.listWithdrawalTransactions(
