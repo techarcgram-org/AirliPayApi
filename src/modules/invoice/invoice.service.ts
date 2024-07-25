@@ -218,7 +218,7 @@ export class InvoiceService {
           .add(1, 'days')
           .format();
 
-        console.log(`Scheduled next payment date: ${next_payment_date}`);
+        this.logger.log(`Scheduled next payment date: ${next_payment_date}`);
 
         await this.prismaService.clients.update({
           where: {

@@ -123,7 +123,6 @@ export class AirlipayBalanceService {
           addresses: true,
         },
       });
-      console.log(user);
       phoneNumber = userObj.addresses.primary_phone_number;
     }
     // let pendingTransac: early_transactions;
@@ -131,7 +130,7 @@ export class AirlipayBalanceService {
     let transaction: early_transactions;
     let payment;
     const charges = (5 / 100) * amount;
-    console.log('CHARGES', charges);
+    this.logger.log('CHARGES', charges);
     // try {
     //   pendingTransac = await this.prismaService.early_transactions.findFirst({
     //     where: {
@@ -264,7 +263,7 @@ export class AirlipayBalanceService {
         },
       });
       this.update(airlipayUpdateObject);
-      console.log('payment failed');
+      this.logger.error('payment failed');
     }
 
     transaction = await this.prismaService.early_transactions.findFirst({
@@ -294,7 +293,6 @@ export class AirlipayBalanceService {
     if (listTransactionDto.type) {
       where = { ...where, transaction_type: type };
     }
-    console.log('WHERE', where, listTransactionDto);
     try {
       transactions = this.prismaService.early_transactions.findMany({
         where,

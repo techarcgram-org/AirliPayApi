@@ -39,7 +39,7 @@ export class FapshiService {
         data,
         { headers: this.headers },
       );
-      console.log('payout initiated successfully:', response.data);
+      this.logger.log('payout initiated successfully:', response.data);
       return response.data;
     } catch (error) {
       this.logger.error(`Error making payout ${error}`);

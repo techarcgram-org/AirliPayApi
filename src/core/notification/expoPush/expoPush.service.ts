@@ -26,7 +26,7 @@ export class ExpoPushService {
         messages,
         { headers },
       );
-      console.log('Push notification sent successfully:', response.data);
+      this.logger.log('Push notification sent successfully:', response.data);
       return response.data;
     } catch (error) {
       this.logger.error(`error ${error}`);

@@ -73,7 +73,7 @@ export class AccountSettingsService {
           },
         }));
     } catch (error) {
-      console.log(error);
+      this.logger.error(error?.response);
       throw new InternalServerErrorException();
     }
     let settings;
@@ -88,7 +88,7 @@ export class AccountSettingsService {
         },
       });
     } catch (error) {
-      console.log(error);
+      this.logger.error(error?.response);
       throw new InternalServerErrorException();
     }
     return settings;

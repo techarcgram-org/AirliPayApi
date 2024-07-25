@@ -106,7 +106,6 @@ export class PaymentService {
     for (; i < maxChecks; i++) {
       try {
         response = await this.fapshiService.paymentStatus(transactionId);
-        console.log('RESPONSE', response);
       } catch (e) {
         this.logger.error(`${logPrefix()} Error fetching transaction: ${e}`);
         if (lastException === e) {

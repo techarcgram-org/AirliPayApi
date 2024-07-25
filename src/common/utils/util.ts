@@ -134,7 +134,7 @@ export const constructUsersArrayFromCsv = async (csvFile) => {
           users.push(row);
         })
         .on('end', () => {
-          console.log('CSV file processing completed.');
+          console.log(`${logPrefix()} - CSV file processing completed`);
         }),
     );
     return users;

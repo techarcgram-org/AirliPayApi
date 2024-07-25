@@ -508,10 +508,7 @@ export class UserService {
           account_status: AccountStatus.ACTIVE,
         },
       });
-    } catch (error) {
-      console.log(error);
-      return { message: 'creating password failed', code: 0 };
-    }
+    } catch (error) {}
     return { message: 'password successfully created', code: 1 };
   }
 
@@ -530,7 +527,7 @@ export class UserService {
         },
       });
     } catch (error) {
-      console.log(error);
+      this.logger.log(error?.response);
       return { message: 'failed sending reset email', code: 0 };
     }
 
@@ -545,7 +542,7 @@ export class UserService {
         },
       });
     } catch (error) {
-      console.log(error);
+      this.logger.log(error?.response);
       return { message: 'error updating secret', code: 0 };
     }
     return { message: 'reset email sent successfully', code: 1 };
@@ -567,7 +564,7 @@ export class UserService {
           },
         });
       } catch (error) {
-        console.log(error);
+        this.logger.log(error?.response);
         return { message: error, code: 0 };
       }
       return { message: 'verification success success', code: 1 };

@@ -7,6 +7,7 @@ import {
   Get,
   Param,
   Query,
+  Logger,
 } from '@nestjs/common';
 import { AirlipayBalanceService } from './airlipay-balance.service';
 
@@ -22,6 +23,7 @@ import { ACGuard, UseRoles, UserRoles } from 'nest-access-control';
 export class AirlipayBalanceController {
   constructor(
     private readonly airlipayBalanceService: AirlipayBalanceService,
+    private logger: Logger,
   ) {}
 
   @UseGuards(AuthGuard)
@@ -55,6 +57,7 @@ export class AirlipayBalanceController {
 
   @Get('/fapshi_webhook')
   async fatshiResponse(@Res({ passthrough: true }) res, @Body() body: any) {
-    console.log(body), console.log(res);
+    this.logger.log(body);
+    this.logger.log(res);
   }
 }
