@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from 'src/common/services/prisma.service';
-import { logPrefix, toAirliPayMoney } from 'src/common/utils/util';
+import { logPrefix, toAirliPayMoney } from 'src/common/utils';
 import { savings_balances } from '@prisma/client';
 import * as moment from 'moment';
 

@@ -15,7 +15,7 @@ import {
   isValidPhoneNumber,
   logPrefix,
   telecomOperator,
-} from 'src/common/utils/util';
+} from 'src/common/utils';
 import { CreateBankDto } from './dto/create-bank.dto';
 import {
   account_settings,

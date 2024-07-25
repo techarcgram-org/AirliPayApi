@@ -5,7 +5,7 @@ import { PaymentStatus, PaymentType } from '../../../common/constants';
 import axios from 'axios';
 import { MtnConfig } from '../../../config/mtn.config';
 import { MtnPayment } from '../Payment';
-import { logPrefix } from '../../../common/utils/util';
+import { logPrefix } from '../../../common/utils';
 // import * as Sentry from '@sentry/node';
 
 @Injectable()

@@ -34,8 +34,11 @@ async function bootstrap() {
   const logger = app.get(Logger);
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
+
   app.enableCors();
   await app.listen(appConfig.app.servicePort || 8004, () => {
+    logger.log('[🚀 ] - Serving API docs using ' + '/api');
+
     logger.log(
       `🚀 ====> Application running on port: ${
         appConfig.app.servicePort || 8004

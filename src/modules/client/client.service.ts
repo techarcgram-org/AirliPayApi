@@ -8,7 +8,7 @@ import {
   constructUsersArrayFromCsv,
   generatePasswordHash,
   logPrefix,
-} from 'src/common/utils/util';
+} from 'src/common/utils';
 import * as moment from 'moment';
 import { MailService } from 'src/core/mail/mail.service';
 import { Prisma, account_status_types } from '@prisma/client';

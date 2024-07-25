@@ -17,7 +17,7 @@ import {
   constructUsersArrayFromCsv,
   generatePasswordHash,
   logPrefix,
-} from 'src/common/utils/util';
+} from 'src/common/utils';
 import { Prisma, account_status_types, banks } from '@prisma/client';
 import { UpdatePhoneDto } from './dto/update-phone.dto';
 

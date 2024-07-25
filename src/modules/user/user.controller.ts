@@ -27,7 +27,7 @@ import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { AuthGuard } from '../auth/auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import { csvFileFilter, csvFileName } from 'src/common/utils/util';
+import { csvFileFilter, csvFileName } from 'src/common/utils';
 import { BuldCreateUserDto } from './dto/bulk-create-user.dto';
 import { ListTransactionDto } from '../airlipay-balance/dto/list-transaction.dto';
 import { AirlipayBalanceService } from '../airlipay-balance/airlipay-balance.service';

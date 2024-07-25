@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './modules/user/user.module';
@@ -16,6 +16,7 @@ import { ClientModule } from './modules/client/client.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { InvoiceModule } from './modules/invoice/invoice.module';
 import { CronjobsModule } from './modules/cronjobs/cronjobs.module';
+import { LoggerMiddleware } from './common/middleware/logger.middleware';
 @Module({
   imports: [
     AppConfigModule,
@@ -36,4 +37,8 @@ import { CronjobsModule } from './modules/cronjobs/cronjobs.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+}

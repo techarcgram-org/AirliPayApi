@@ -5,9 +5,9 @@ import {
   TelecomOperator,
 } from '../../common/constants';
 import { MtnService } from './mtn/mtn.service';
-import { telecomOperator } from '../../common/utils/util';
+import { telecomOperator } from '../../common/utils';
 import { Payment } from './Payment';
-import { logPrefix, delay } from '../../common/utils/util';
+import { logPrefix, delay } from '../../common/utils';
 import { FapshiService } from './fapshi/fapshi.service';
 
 @Injectable()

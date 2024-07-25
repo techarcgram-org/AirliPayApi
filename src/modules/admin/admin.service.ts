@@ -5,7 +5,7 @@ import { AccountStatus, Role } from 'src/common/constants';
 import * as moment from 'moment';
 import { PrismaService } from 'src/common/services/prisma.service';
 import { Prisma, account_status_types } from '@prisma/client';
-import { generatePasswordHash, logPrefix } from 'src/common/utils/util';
+import { generatePasswordHash, logPrefix } from 'src/common/utils';
 
 @Injectable()
 export class AdminService {

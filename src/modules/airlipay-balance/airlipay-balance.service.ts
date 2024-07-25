@@ -16,7 +16,7 @@ import {
   subtractBFromA,
   telecomOperator,
   toAirliPayMoney,
-} from 'src/common/utils/util';
+} from 'src/common/utils';
 import {
   PaymentStatus,
   PaymentType,

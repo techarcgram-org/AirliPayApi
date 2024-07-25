@@ -15,11 +15,7 @@ import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import {
-  csvDestination,
-  csvFileFilter,
-  csvFileName,
-} from 'src/common/utils/util';
+import { csvDestination, csvFileFilter, csvFileName } from 'src/common/utils';
 import { AuthGuard } from '../auth/auth.guard';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { CreateClientBankDto } from './dto/create-client-bank.dto';
