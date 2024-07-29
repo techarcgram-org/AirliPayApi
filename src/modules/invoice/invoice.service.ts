@@ -107,18 +107,23 @@ export class InvoiceService {
   async generateInvoice() {
     this.logger.debug(`${logPrefix()} => CRON to generate invoice has started`);
 
-    const startDate = moment().subtract(1, 'days').startOf('day').format();
-    const endDate = moment().subtract(1, 'days').endOf('day').format();
-    const dateLimit = moment().format('YYYY-MM-DD') + 'T00:00:00.000Z';
+    const startDate = moment()
+      .subtract(1, 'month')
+      .date(29)
+      .startOf('day')
+      .format();
+    const endDate = moment().subtract(1, 'day').date(26).endOf('day').format();
+    // const dateLimit = moment().subtract(1, 'month').date(28).format('YYYY-MM-DD') + 'T00:00:00.000Z';
     let clients;
     try {
       this.logger.log(
-        `Fetching all clients with payment date scheduled on or before: ${dateLimit}`,
+        `Fetching all clients with payment date scheduled between: ${startDate} and end date ${endDate}`,
       );
       clients = await this.prismaService.clients.findMany({
         where: {
           next_payment_date: {
-            lte: dateLimit,
+            gt: startDate,
+            lte: endDate,
           },
         },
         include: {
@@ -215,7 +220,8 @@ export class InvoiceService {
         );
 
         const next_payment_date = moment(client.next_payment_date)
-          .add(1, 'days')
+          .add(1, 'months')
+          .date(28)
           .format();
 
         this.logger.log(`Scheduled next payment date: ${next_payment_date}`);

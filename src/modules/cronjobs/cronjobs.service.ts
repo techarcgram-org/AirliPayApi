@@ -15,7 +15,8 @@ export class CronjobsService {
     this.airlipayBalanceService.updateBalance();
   }
 
-  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT, { name: 'invoiceGenerateJob' })
+  // @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT, { name: 'invoiceGenerateJob' })
+  @Cron('0 0 0 27 * *', { name: 'invoiceGenerateJob' })
   async generateInvoice() {
     this.invoiceService.generateInvoice();
   }

@@ -114,6 +114,15 @@ export class AirlipayBalanceService {
   }
 
   async withdraw(user: UserSession, amount: number, phoneNumber: string) {
+    const currentDate = new Date();
+    const is27thOr28th =
+      currentDate.getDate() === 27 || currentDate.getDate() === 28;
+    if (is27thOr28th) {
+      throw new HttpException(
+        `Withdrawal can not be done on the 27th or 28th of the month.`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     if (!phoneNumber) {
       const userObj = await this.prismaService.users.findFirst({
         where: {
