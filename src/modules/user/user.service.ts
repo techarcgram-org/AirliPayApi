@@ -792,4 +792,44 @@ export class UserService {
       );
     }
   }
+
+  async getUserInvoices(userId: number, page: number = 1, limit: number = 10) {
+    let invoices: any;
+    try {
+      const user = await this.findOne(userId);
+      const offset = (page - 1) * limit;
+      invoices = await this.prismaService.invoices.findMany({
+        where: {
+          client_id: user.client_id,
+        },
+        take: limit,
+        skip: offset,
+      });
+
+      for (let index = 0; index < invoices.length; index++) {
+        const invoice = invoices[index];
+        const startDate = invoice.from;
+        const endDate = invoice.to;
+
+        const earlyTransactions =
+          await this.prismaService.early_transactions.findMany({
+            where: {
+              user_id: user.id,
+              initiated_date: {
+                gte: startDate,
+                lt: endDate,
+              },
+            },
+          });
+        invoices[index].transactions = earlyTransactions;
+      }
+    } catch (error) {
+      this.logger.error(`${logPrefix()} ${error}`);
+      throw new HttpException(
+        `Error getting client invoices`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+    return invoices;
+  }
 }

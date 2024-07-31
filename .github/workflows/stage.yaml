@@ -70,3 +70,4 @@ jobs:
             docker rm ${{ env.IMAGE_NAME }}
             docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.IMAGE_TAG}}
             docker compose up -d
+            docker image prune -f

@@ -198,4 +198,15 @@ export class UsersController {
   remove(@Param('id') id: string) {
     return this.usersService.remove(+id);
   }
+
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  @Get(':user_id/invoices')
+  async clientInvoices(
+    @Param('user_id') user_id: number,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ) {
+    return this.usersService.getUserInvoices(user_id, page, limit);
+  }
 }
