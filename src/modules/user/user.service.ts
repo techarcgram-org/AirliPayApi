@@ -794,7 +794,7 @@ export class UserService {
   }
 
   async getUserInvoices(userId: number, page: number = 1, limit: number = 10) {
-    let invoices: any;
+    let invoices: any[];
     try {
       const user = await this.findOne(userId);
       const offset = (page - 1) * limit;
@@ -829,6 +829,31 @@ export class UserService {
           });
         invoices[index].transactions = earlyTransactions;
       }
+
+      const lastInvoice = invoices[invoices.length - 1];
+      const currentDate = new Date();
+      const newInvoice = {
+        from: lastInvoice.to,
+        to: currentDate,
+        transactions: [],
+      };
+
+      const newTransactions =
+        await this.prismaService.early_transactions.findMany({
+          where: {
+            user_id: user.id,
+            initiated_date: {
+              gte: newInvoice.from,
+              lt: newInvoice.to,
+            },
+          },
+          orderBy: {
+            initiated_date: 'desc',
+          },
+        });
+
+      newInvoice.transactions = newTransactions;
+      invoices.unshift(newInvoice);
     } catch (error) {
       this.logger.error(`${logPrefix()} ${error}`);
       throw new HttpException(
