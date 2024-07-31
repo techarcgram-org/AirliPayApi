@@ -830,30 +830,32 @@ export class UserService {
         invoices[index].transactions = earlyTransactions;
       }
 
-      const lastInvoice = invoices[invoices.length - 1];
-      const currentDate = new Date();
-      const newInvoice = {
-        from: lastInvoice.to,
-        to: currentDate,
-        transactions: [],
-      };
+      if (page === 1) {
+        const lastInvoice = invoices[invoices.length - 1];
+        const currentDate = new Date();
+        const newInvoice = {
+          from: lastInvoice.to,
+          to: currentDate,
+          transactions: [],
+        };
 
-      const newTransactions =
-        await this.prismaService.early_transactions.findMany({
-          where: {
-            user_id: user.id,
-            initiated_date: {
-              gte: newInvoice.from,
-              lt: newInvoice.to,
+        const newTransactions =
+          await this.prismaService.early_transactions.findMany({
+            where: {
+              user_id: user.id,
+              initiated_date: {
+                gte: newInvoice.from,
+                lt: newInvoice.to,
+              },
             },
-          },
-          orderBy: {
-            initiated_date: 'desc',
-          },
-        });
+            orderBy: {
+              initiated_date: 'desc',
+            },
+          });
 
-      newInvoice.transactions = newTransactions;
-      invoices.unshift(newInvoice);
+        newInvoice.transactions = newTransactions;
+        invoices.unshift(newInvoice);
+      }
     } catch (error) {
       this.logger.error(`${logPrefix()} ${error}`);
       throw new HttpException(
