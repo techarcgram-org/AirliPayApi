@@ -820,6 +820,9 @@ export class UserService {
                 lt: endDate,
               },
             },
+            orderBy: {
+              initiated_date: 'desc',
+            },
           });
         invoices[index].transactions = earlyTransactions;
       }
