@@ -804,6 +804,9 @@ export class UserService {
         },
         take: limit,
         skip: offset,
+        orderBy: {
+          created_at: 'desc',
+        },
       });
 
       for (let index = 0; index < invoices.length; index++) {
