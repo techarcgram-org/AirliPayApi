@@ -201,7 +201,7 @@ export class UsersController {
 
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
-  @Get(':user_id/invoices')
+  @Get(':user_id/pay-periods')
   async clientInvoices(
     @Param('user_id') user_id: number,
     @Query('page') page: number = 1,
