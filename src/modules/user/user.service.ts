@@ -831,7 +831,7 @@ export class UserService {
       }
 
       if (page === 1) {
-        const lastInvoice = invoices[invoices.length - 1];
+        const lastInvoice = invoices[0];
         const currentDate = new Date();
         const newInvoice = {
           from: lastInvoice.to,
