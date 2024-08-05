@@ -1,10 +1,15 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
-import { AccountStatus, Role } from 'src/common/constants';
+import { AccountStatus, PaymentStatus, Role } from 'src/common/constants';
 import * as moment from 'moment';
 import { PrismaService } from 'src/common/services/prisma.service';
-import { Prisma, account_status_types } from '@prisma/client';
+import {
+  Prisma,
+  account_status_types,
+  invoice_status,
+  transaction_types,
+} from '@prisma/client';
 import { generatePasswordHash, logPrefix } from 'src/common/utils';
 
 @Injectable()
@@ -223,5 +228,164 @@ export class AdminService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+
+  async getAdminDashboardMetrics() {
+    // Fetch admin metrics
+    const activeAdmins = await this.prismaService.admins.count({
+      where: {
+        accounts: {
+          account_status: account_status_types.ACTIVE,
+        },
+      },
+    });
+
+    const pendingAdmins = await this.prismaService.admins.count({
+      where: {
+        accounts: {
+          account_status: account_status_types.PENDING,
+        },
+      },
+    });
+
+    const deActivatedAdmins = await this.prismaService.admins.count({
+      where: {
+        accounts: {
+          account_status: account_status_types.DEACTIVATED,
+        },
+      },
+    });
+
+    const blockedAdmins = await this.prismaService.admins.count({
+      where: {
+        accounts: {
+          account_status: account_status_types.BLOCKED,
+        },
+      },
+    });
+
+    // Fetch user metrics
+    const activeUsers = await this.prismaService.users.count({
+      where: {
+        accounts: {
+          account_status: account_status_types.ACTIVE,
+        },
+      },
+    });
+
+    const pendingUsers = await this.prismaService.users.count({
+      where: {
+        accounts: {
+          account_status: account_status_types.PENDING,
+        },
+      },
+    });
+
+    const deActivatedUsers = await this.prismaService.users.count({
+      where: {
+        accounts: {
+          account_status: account_status_types.DEACTIVATED,
+        },
+      },
+    });
+
+    const blockedUsers = await this.prismaService.users.count({
+      where: {
+        accounts: {
+          account_status: account_status_types.BLOCKED,
+        },
+      },
+    });
+
+    // Fetch client metrics
+    const activeClients = await this.prismaService.clients.count({
+      where: {
+        accounts: {
+          account_status: account_status_types.ACTIVE,
+        },
+      },
+    });
+
+    const pendingClients = await this.prismaService.clients.count({
+      where: {
+        accounts: {
+          account_status: account_status_types.PENDING,
+        },
+      },
+    });
+
+    const deActivatedClients = await this.prismaService.clients.count({
+      where: {
+        accounts: {
+          account_status: account_status_types.DEACTIVATED,
+        },
+      },
+    });
+
+    const blockedClients = await this.prismaService.clients.count({
+      where: {
+        accounts: {
+          account_status: account_status_types.BLOCKED,
+        },
+      },
+    });
+
+    // Fetch transaction metrics
+    const allTransactions = await this.prismaService.early_transactions.count();
+    const successfulTransactions =
+      await this.prismaService.early_transactions.count({
+        where: {
+          status: PaymentStatus.SUCCESS,
+        },
+      });
+    const failedTransactions =
+      await this.prismaService.early_transactions.count({
+        where: {
+          status: PaymentStatus.FAILED,
+        },
+      });
+
+    // Fetch invoice metrics
+    const paidInvoices = await this.prismaService.invoices.count({
+      where: {
+        status: invoice_status.TREATED,
+      },
+    });
+
+    const unPaidInvoices = await this.prismaService.invoices.count({
+      where: {
+        status: invoice_status.NOT_TREATED,
+      },
+    });
+
+    return {
+      admins: {
+        active: activeAdmins,
+        pending: pendingAdmins,
+        deactivated: deActivatedAdmins,
+        blocked: blockedAdmins,
+      },
+      users: {
+        active: activeUsers,
+        pending: pendingUsers,
+        deactivated: deActivatedUsers,
+        blocked: blockedUsers,
+      },
+      clients: {
+        active: activeClients,
+        pending: pendingClients,
+        deactivated: deActivatedClients,
+        blocked: blockedClients,
+      },
+      transactions: {
+        all: allTransactions,
+        success: successfulTransactions,
+        failed: failedTransactions,
+      },
+      invoices: {
+        paid: paidInvoices,
+        unpaid: unPaidInvoices,
+      },
+    };
   }
 }

@@ -52,4 +52,11 @@ export class AdminController {
   remove(@Param('id') id: string) {
     return this.adminService.remove(+id);
   }
+
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  @Get('dashboard/metrics')
+  getAdminDashboardMetrics() {
+    return this.adminService.getAdminDashboardMetrics();
+  }
 }

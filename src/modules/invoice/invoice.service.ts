@@ -9,10 +9,15 @@ import { InvoiceStatus, TransactionType } from 'src/common/constants';
 import { ListInvoicesDto } from './dto/list-invoices.dto';
 import { transaction_types, invoice_status } from '@prisma/client';
 import { Client } from '../client/entities/client.entity';
+import { MailService } from 'src/core/mail/mail.service';
 
 @Injectable()
 export class InvoiceService {
-  constructor(private prismaService: PrismaService, private logger: Logger) {}
+  constructor(
+    private prismaService: PrismaService,
+    private logger: Logger,
+    private mailService: MailService,
+  ) {}
 
   async findAll(listInvoicesDto: ListInvoicesDto) {
     const { page } = listInvoicesDto;
@@ -85,7 +90,7 @@ export class InvoiceService {
     updateInvoiceDto: UpdateInvoiceDto,
   ) {
     try {
-      return await this.prismaService.invoices.update({
+      const updatedInvoice = await this.prismaService.invoices.update({
         where: {
           id: invoice_id,
         },
@@ -93,6 +98,26 @@ export class InvoiceService {
           status: updateInvoiceDto.status,
         },
       });
+
+      if (updatedInvoice && updateInvoiceDto.status === 'TREATED') {
+        // Assuming you have a mail service to send emails
+        try {
+          await this.mailService.sendMail({
+            to: 'techarcgram@gmail.com',
+            subject: 'Invoice Status Updated',
+            text: `The status of invoice with ID ${invoice_id} has been updated to TREATED.`,
+            context: {},
+          });
+        } catch (emailError) {
+          this.logger.error(
+            `${logPrefix()} Error sending email: ${emailError}`,
+          );
+          throw new HttpException(
+            `Error sending email notification ${emailError}`,
+            HttpStatus.INTERNAL_SERVER_ERROR,
+          );
+        }
+      }
     } catch (error) {
       this.logger.error(`${logPrefix()} ${error}`);
       throw new HttpException(
@@ -184,7 +209,7 @@ export class InvoiceService {
         baseSalary: any;
         transactions: any;
       }> = [];
-      users.forEach((user) => {
+      users.forEach(async (user) => {
         const transactions = user.early_transactions;
 
         transactions.forEach((transaction) => {
@@ -197,6 +222,23 @@ export class InvoiceService {
           baseSalary: user.base_salary,
           transactions: transactions,
         });
+        const user_balance =
+          await this.prismaService.airlipay_balances.findFirst({
+            where: {
+              user_id: user.id,
+            },
+          });
+
+        if (user_balance) {
+          await this.prismaService.airlipay_balances.update({
+            where: {
+              id: user_balance.id,
+            },
+            data: {
+              balance: 0,
+            },
+          });
+        }
       });
       try {
         await this.prismaService.invoices.create({
