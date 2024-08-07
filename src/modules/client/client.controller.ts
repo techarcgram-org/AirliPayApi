@@ -19,6 +19,7 @@ import { csvDestination, csvFileFilter, csvFileName } from 'src/common/utils';
 import { AuthGuard } from '../auth/auth.guard';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { CreateClientBankDto } from './dto/create-client-bank.dto';
+import { UpdateInvoiceDto } from '../invoice/dto/update-invoice.dto';
 
 @Controller('client')
 export class ClientController {
@@ -109,5 +110,15 @@ export class ClientController {
   @Get(':client_id/invoices')
   async clientInvoices(@Param('client_id') client_id: number) {
     return this.clientService.getClientInvoices(client_id);
+  }
+
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  @Patch(':id/update-status')
+  async updateInvoiceStatus(
+    @Param('id') id: number,
+    @Body() updateInvoiceDto: UpdateInvoiceDto,
+  ) {
+    return await this.clientService.updateInvoiceStatus(id, updateInvoiceDto);
   }
 }

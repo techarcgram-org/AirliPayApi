@@ -98,26 +98,6 @@ export class InvoiceService {
           status: updateInvoiceDto.status,
         },
       });
-
-      if (updatedInvoice && updateInvoiceDto.status === 'TREATED') {
-        // Assuming you have a mail service to send emails
-        try {
-          await this.mailService.sendMail({
-            to: 'techarcgram@gmail.com',
-            subject: 'Invoice Status Updated',
-            text: `The status of invoice with ID ${invoice_id} has been updated to TREATED.`,
-            context: {},
-          });
-        } catch (emailError) {
-          this.logger.error(
-            `${logPrefix()} Error sending email: ${emailError}`,
-          );
-          throw new HttpException(
-            `Error sending email notification ${emailError}`,
-            HttpStatus.INTERNAL_SERVER_ERROR,
-          );
-        }
-      }
     } catch (error) {
       this.logger.error(`${logPrefix()} ${error}`);
       throw new HttpException(

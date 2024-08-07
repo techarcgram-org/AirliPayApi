@@ -1,4 +1,10 @@
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 import { PrismaService } from 'src/common/services/prisma.service';
@@ -11,9 +17,10 @@ import {
 } from 'src/common/utils';
 import * as moment from 'moment';
 import { MailService } from 'src/core/mail/mail.service';
-import { Prisma, account_status_types } from '@prisma/client';
+import { Prisma, account_status_types, invoice_status } from '@prisma/client';
 import { Cron } from '@nestjs/schedule';
 import { CreateClientBankDto } from './dto/create-client-bank.dto';
+import { UpdateInvoiceDto } from '../invoice/dto/update-invoice.dto';
 
 @Injectable()
 export class ClientService {
@@ -333,6 +340,57 @@ export class ClientService {
       this.logger.error(`${logPrefix()} ${error}`);
       throw new HttpException(
         `Error Deleting Client`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  // this is going to update the invoice status
+  async updateInvoiceStatus(
+    invoice_id: number,
+    updateInvoiceDto: UpdateInvoiceDto,
+  ) {
+    if (updateInvoiceDto.status !== invoice_status.PENDING_CONFIRMATION) {
+      throw new BadRequestException(
+        'Client cannot updated invoice status as treated',
+      );
+    }
+    try {
+      const updatedInvoice = await this.prismaService.invoices.update({
+        where: {
+          id: invoice_id,
+        },
+        data: {
+          status: updateInvoiceDto.status,
+        },
+      });
+
+      if (
+        updatedInvoice &&
+        updateInvoiceDto.status === invoice_status.PENDING_CONFIRMATION
+      ) {
+        // Assuming you have a mail service to send emails
+        try {
+          await this.mailService.sendMail({
+            to: 'techarcgram@gmail.com',
+            subject: 'Invoice Status Updated',
+            text: `The status of invoice with ID ${invoice_id} has been updated to PENDING_CONFIRMATION, verify the transaction and update the final status.`,
+            context: {},
+          });
+        } catch (emailError) {
+          this.logger.error(
+            `${logPrefix()} Error sending email: ${emailError}`,
+          );
+          throw new HttpException(
+            `Error sending email notification ${emailError}`,
+            HttpStatus.INTERNAL_SERVER_ERROR,
+          );
+        }
+      }
+    } catch (error) {
+      this.logger.error(`${logPrefix()} ${error}`);
+      throw new HttpException(
+        `Error updating invoice status  ${error}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

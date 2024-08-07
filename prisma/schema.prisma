@@ -91,25 +91,25 @@ model client_payments {
 }
 
 model clients {
-  id                    BigInt            @id @default(autoincrement())
-  name                  String?           @db.VarChar
-  industry              String?
-  tax_id                String?           @db.VarChar
-  client_commision      Int?
-  earning_report_status Boolean?
-  next_payment_date     DateTime?         @db.Date
-  employee_roaster_file String?           @db.VarChar
-  account_id            BigInt
-  address_id            BigInt
-  created_at            DateTime          @db.Timestamp(6)
-  updated_at            DateTime          @db.Timestamp(6)
-  client_payments       client_payments[]
-  addresses             addresses         @relation(fields: [address_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_56e36fce15")
-  accounts              accounts          @relation(fields: [account_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_bed59fd791")
-  users                 users[]
-  invoices              invoices[]
+  id                           BigInt                         @id @default(autoincrement())
+  name                         String?                        @db.VarChar
+  industry                     String?
+  tax_id                       String?                        @db.VarChar
+  client_commision             Int?
+  earning_report_status        Boolean?
+  next_payment_date            DateTime?                      @db.Date
+  employee_roaster_file        String?                        @db.VarChar
+  account_id                   BigInt
+  address_id                   BigInt
+  created_at                   DateTime                       @db.Timestamp(6)
+  updated_at                   DateTime                       @db.Timestamp(6)
+  client_payments              client_payments[]
+  addresses                    addresses                      @relation(fields: [address_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_56e36fce15")
+  accounts                     accounts                       @relation(fields: [account_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_bed59fd791")
+  users                        users[]
+  invoices                     invoices[]
   client_mobile_money_accounts client_mobile_money_accounts[]
-  client_banks          client_banks[]
+  client_banks                 client_banks[]
 
   @@index([account_id], map: "index_clients_on_account_id")
   @@index([address_id], map: "index_clients_on_address_id")
@@ -152,15 +152,15 @@ model users {
 }
 
 model banks {
-  id           BigInt       @id @default(autoincrement())
-  name         String?      @db.VarChar
+  id           BigInt         @id @default(autoincrement())
+  name         String?        @db.VarChar
   is_partner   Boolean?
   supports_api Boolean?
-  swift        String?      @db.VarChar
+  swift        String?        @db.VarChar
   address_id   BigInt
-  created_at   DateTime     @db.Timestamp(6)
-  updated_at   DateTime     @db.Timestamp(6)
-  addresses    addresses    @relation(fields: [address_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_310a58ada9")
+  created_at   DateTime       @db.Timestamp(6)
+  updated_at   DateTime       @db.Timestamp(6)
+  addresses    addresses      @relation(fields: [address_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_310a58ada9")
   user_banks   user_banks[]
   client_banks client_banks[]
 
@@ -183,14 +183,14 @@ model user_banks {
 }
 
 model client_banks {
-  id               BigInt             @id @default(autoincrement())
-  account_number   String?            @db.VarChar
-  client_id        BigInt
-  bank_id          BigInt
-  created_at       DateTime           @db.Timestamp(6)
-  updated_at       DateTime           @db.Timestamp(6)
-  banks            banks              @relation(fields: [bank_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_8489a23145")
-  client           clients            @relation(fields: [client_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_9e84f78ddd")
+  id             BigInt   @id @default(autoincrement())
+  account_number String?  @db.VarChar
+  client_id      BigInt
+  bank_id        BigInt
+  created_at     DateTime @db.Timestamp(6)
+  updated_at     DateTime @db.Timestamp(6)
+  banks          banks    @relation(fields: [bank_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_8489a23145")
+  client         clients  @relation(fields: [client_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_9e84f78ddd")
 
   @@index([bank_id], map: "index_client_banks_on_bank_id")
   @@index([client_id], map: "index_client_banks_on_client_id")
@@ -233,14 +233,14 @@ model user_mobile_money_accounts {
 }
 
 model client_mobile_money_accounts {
-  id               BigInt             @id @default(autoincrement())
-  phone_number     String?            @db.VarChar
-  operator         operators?
-  client_id        BigInt
-  created_at       DateTime           @db.Timestamp(6)
-  updated_at       DateTime           @db.Timestamp(6)
-  default          Boolean?
-  client           clients              @relation(fields: [client_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_f3b530c4f3")
+  id           BigInt     @id @default(autoincrement())
+  phone_number String?    @db.VarChar
+  operator     operators?
+  client_id    BigInt
+  created_at   DateTime   @db.Timestamp(6)
+  updated_at   DateTime   @db.Timestamp(6)
+  default      Boolean?
+  client       clients    @relation(fields: [client_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_f3b530c4f3")
 
   @@index([client_id], map: "index_client_mobile_money_accounts_on_client_id")
 }
@@ -316,34 +316,34 @@ model early_transactions {
 }
 
 model invoices {
-  id                BigInt              @id @default(autoincrement())
-  invoice_number    String
-  client_id         BigInt
-  status            invoice_status
-  totalAmount       Decimal             @db.Decimal(10, 2)
-  totalFees         Decimal             @db.Decimal(10, 2)
-  from              DateTime
-  to                DateTime
-  taxes             Decimal
-  transactions      Json?
-  created_at        DateTime            @db.Timestamp(6)
-  updated_at        DateTime            @db.Timestamp(6)
-  client            clients             @relation(fields: [client_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_08c702b978")
+  id             BigInt         @id @default(autoincrement())
+  invoice_number String
+  client_id      BigInt
+  status         invoice_status
+  totalAmount    Decimal        @db.Decimal(10, 2)
+  totalFees      Decimal        @db.Decimal(10, 2)
+  from           DateTime
+  to             DateTime
+  taxes          Decimal
+  transactions   Json?
+  created_at     DateTime       @db.Timestamp(6)
+  updated_at     DateTime       @db.Timestamp(6)
+  client         clients        @relation(fields: [client_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_08c702b978")
 
   @@index([client_id])
   @@index([status])
 }
 
 model notifications {
-  id                BigInt              @id @default(autoincrement())
-  user_id           BigInt
-  title             String              @db.VarChar
-  message           String              @db.VarChar
-  device_id         String?              @db.VarChar
-  status            notification_status
-  created_at        DateTime            @db.Timestamp(6)
-  updated_at        DateTime            @db.Timestamp(6)
-  user              users               @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_08c002b928")
+  id         BigInt              @id @default(autoincrement())
+  user_id    BigInt
+  title      String              @db.VarChar
+  message    String              @db.VarChar
+  device_id  String?             @db.VarChar
+  status     notification_status
+  created_at DateTime            @db.Timestamp(6)
+  updated_at DateTime            @db.Timestamp(6)
+  user       users               @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_08c002b928")
 
   @@index([user_id])
 }
@@ -368,7 +368,7 @@ enum notification_status {
 enum invoice_status {
   TREATED
   NOT_TREATED
-  
+  PENDING_CONFIRMATION
 }
 
 enum operators {
