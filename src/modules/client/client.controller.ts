@@ -114,7 +114,7 @@ export class ClientController {
 
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
-  @Patch(':id/update-status')
+  @Patch(':id/update-invoice-status')
   async updateInvoiceStatus(
     @Param('id') id: number,
     @Body() updateInvoiceDto: UpdateInvoiceDto,
