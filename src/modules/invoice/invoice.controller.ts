@@ -6,6 +6,7 @@ import {
   UseGuards,
   Param,
   Patch,
+  Put,
 } from '@nestjs/common';
 import { InvoiceService } from './invoice.service';
 import { ListInvoicesDto } from './dto/list-invoices.dto';
@@ -34,7 +35,7 @@ export class InvoiceController {
 
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
-  @Patch(':id/update-status')
+  @Put(':id/update-status')
   async updateInvoiceStatus(
     @Param('id') id: number,
     @Body() updateInvoiceDto: UpdateInvoiceDto,

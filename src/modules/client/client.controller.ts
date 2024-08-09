@@ -9,6 +9,7 @@ import {
   UploadedFile,
   UseInterceptors,
   UseGuards,
+  Put,
 } from '@nestjs/common';
 import { ClientService } from './client.service';
 import { CreateClientDto } from './dto/create-client.dto';
@@ -114,7 +115,7 @@ export class ClientController {
 
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
-  @Patch(':id/update-invoice-status')
+  @Put(':id/update-invoice-status')
   async updateInvoiceStatus(
     @Param('id') id: number,
     @Body() updateInvoiceDto: UpdateInvoiceDto,

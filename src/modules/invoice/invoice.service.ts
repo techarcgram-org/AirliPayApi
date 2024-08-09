@@ -98,6 +98,8 @@ export class InvoiceService {
           status: updateInvoiceDto.status,
         },
       });
+
+      return updatedInvoice;
     } catch (error) {
       this.logger.error(`${logPrefix()} ${error}`);
       throw new HttpException(

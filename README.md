@@ -55,6 +55,7 @@ $ yarn test:cov
 npx prisma init
 ```
 
+
 # Create and run migrations
 ```
 npx prisma migrate dev -- <name of migration here> init
@@ -62,6 +63,13 @@ npx prisma migrate dev -- <name of migration here> init
 
 ```
 npx prisma migrate deploy
+```
+
+
+# View database with prisma
+
+```
+sudo npx prisma studio
 ```
 
 ## Local dev with Docker-compose

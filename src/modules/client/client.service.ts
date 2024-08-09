@@ -350,6 +350,8 @@ export class ClientService {
     invoice_id: number,
     updateInvoiceDto: UpdateInvoiceDto,
   ) {
+    console.log(updateInvoiceDto);
+
     if (updateInvoiceDto.status !== invoice_status.PENDING_CONFIRMATION) {
       throw new BadRequestException(
         'Client cannot updated invoice status as treated',
@@ -365,28 +367,29 @@ export class ClientService {
         },
       });
 
-      if (
-        updatedInvoice &&
-        updateInvoiceDto.status === invoice_status.PENDING_CONFIRMATION
-      ) {
-        // Assuming you have a mail service to send emails
-        try {
-          await this.mailService.sendMail({
-            to: 'techarcgram@gmail.com',
-            subject: 'Invoice Status Updated',
-            text: `The status of invoice with ID ${invoice_id} has been updated to PENDING_CONFIRMATION, verify the transaction and update the final status.`,
-            context: {},
-          });
-        } catch (emailError) {
-          this.logger.error(
-            `${logPrefix()} Error sending email: ${emailError}`,
-          );
-          throw new HttpException(
-            `Error sending email notification ${emailError}`,
-            HttpStatus.INTERNAL_SERVER_ERROR,
-          );
+      const sendEmail = async () => {
+        if (
+          updatedInvoice &&
+          updateInvoiceDto.status === invoice_status.PENDING_CONFIRMATION
+        ) {
+          // Assuming you have a mail service to send emails
+          try {
+            await this.mailService.sendMail({
+              to: 'techarcgram@gmail.com',
+              subject: 'Invoice Status Updated',
+              text: `The status of invoice with ID ${invoice_id} has been updated to PENDING_CONFIRMATION, verify the transaction and update the final status.`,
+              context: {},
+            });
+          } catch (emailError) {
+            this.logger.error(
+              `${logPrefix()} Error sending email: ${emailError}`,
+            );
+          }
         }
-      }
+      };
+
+      sendEmail();
+      return updatedInvoice;
     } catch (error) {
       this.logger.error(`${logPrefix()} ${error}`);
       throw new HttpException(
