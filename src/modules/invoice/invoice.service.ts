@@ -57,26 +57,21 @@ export class InvoiceService {
       );
     }
     try {
-      transactions = await this.prismaService.users.findMany({
+      transactions = await this.prismaService.early_transactions.findMany({
         where: {
-          client_id: invoice.client_id,
-        },
-        include: {
-          early_transactions: {
-            where: {
-              // transaction_type: transaction_types.DEPOSIT,
-              initiated_date: {
-                gte: invoice.from, // Greater than or equal to the start date
-                lt: invoice.to, // Less than or equal to the end date
-              },
-            },
+          users: {
+            client_id: invoice.client_id,
+          },
+          initiated_date: {
+            gte: invoice.from, // Greater than or equal to the start date
+            lt: invoice.to, // Less than or equal to the end date
           },
         },
       });
     } catch (error) {
       this.logger.error(`${logPrefix()} ${error}`);
       throw new HttpException(
-        `Error getting transactions of users of invoice ${id}`,
+        `Error getting transactions of invoice ${id}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
