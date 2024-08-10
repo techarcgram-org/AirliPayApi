@@ -64,7 +64,7 @@ export class InvoiceService {
         include: {
           early_transactions: {
             where: {
-              transaction_type: transaction_types.DEPOSIT,
+              // transaction_type: transaction_types.DEPOSIT,
               initiated_date: {
                 gte: invoice.from, // Greater than or equal to the start date
                 lt: invoice.to, // Less than or equal to the end date
