@@ -237,6 +237,7 @@ export class ClientService {
           activation_date = new Date();
         }
       }
+
       updatedClientData = await this.prismaService.clients.update({
         where: {
           id,
@@ -449,6 +450,12 @@ export class ClientService {
       newInvoice.status = InvoiceStatus.NOT_TREATED;
       newInvoice.totalAmount = totalAmount;
       newInvoice.totalFees = totalFee;
+      const client = await this.prismaService.clients.findUnique({
+        where: {
+          id: clientId,
+        },
+      });
+      newInvoice.client = client;
       invoices.unshift(newInvoice);
     } catch (error) {
       this.logger.error(`${logPrefix()} ${error}`);

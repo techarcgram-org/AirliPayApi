@@ -61,7 +61,7 @@ export class ClientController {
 
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
-  @Patch(':id')
+  @Put(':id')
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
