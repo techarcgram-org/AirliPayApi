@@ -366,7 +366,7 @@ export class AirlipayBalanceService {
         users,
       );
       for (const user of users) {
-        const biHourlyPay = (user.base_salary as any) / 2 / 20 / 24;
+        const dailyPay = ((user.base_salary as any) / 21) * 0.5;
         const balance = await this.prismaService.airlipay_balances.findFirst({
           where: {
             user_id: user.id,
@@ -379,7 +379,7 @@ export class AirlipayBalanceService {
               id: balance.id,
             },
             data: {
-              balance: addAToB(balance.balance, biHourlyPay),
+              balance: addAToB(balance.balance, dailyPay),
             },
           });
 
@@ -389,10 +389,10 @@ export class AirlipayBalanceService {
               status: PaymentStatus.SUCCESS,
               initiated_date: moment().format(),
               execution_date: moment().format(),
-              amount: toAirliPayMoney(biHourlyPay),
+              amount: toAirliPayMoney(dailyPay),
               fees: 0,
               transaction_type: PaymentType.DEPOSIT,
-              new_balance: addAToB(balance.balance, biHourlyPay),
+              new_balance: addAToB(balance.balance, dailyPay),
               old_balance: balance.balance,
               created_at: moment().format(),
               updated_at: moment().format(),
@@ -416,14 +416,14 @@ export class AirlipayBalanceService {
               to: userInfo?.device_id,
               sound: 'default',
               title: `Airlipay Balance`,
-              body: `${biHourlyPay} added to your Airlipay`,
+              body: `${dailyPay} added to your Airlipay`,
             });
           }
 
           await this.prismaService.notifications.create({
             data: {
               title: `Airlipay Balance`,
-              message: `${biHourlyPay} added to your Airlipay`,
+              message: `${dailyPay} added to your Airlipay`,
               user_id: user.id,
               status: notification_status.PENDING,
               device_id: userInfo?.device_id,
