@@ -407,9 +407,49 @@ export class ClientService {
           client_id: clientId,
         },
         orderBy: {
-          id: 'desc',
+          created_at: 'desc',
         },
       });
+
+      const lastInvoice = invoices[0];
+      const currentDate = new Date();
+      let totalAmount = 0;
+      let totalFee = 0;
+      const newInvoice: any = {
+        from: lastInvoice.to,
+        to: currentDate,
+        transactions: [],
+      };
+
+      const newTransactions =
+        await this.prismaService.early_transactions.findMany({
+          where: {
+            // user
+            initiated_date: {
+              gte: newInvoice.from,
+              lt: newInvoice.to,
+            },
+          },
+          orderBy: {
+            initiated_date: 'desc',
+          },
+        });
+
+      // Sum the fees and amount
+      newTransactions.forEach((transaction) => {
+        totalAmount += transaction.amount;
+        totalFee += transaction.fees;
+      });
+      const datePrefix = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+      const invoiceNumber = `${datePrefix}-${'Auto'}`;
+
+      newInvoice.transactions = newTransactions;
+      newInvoice.invoice_number = invoiceNumber;
+      newInvoice.client_id = clientId;
+      newInvoice.status = InvoiceStatus.NOT_TREATED;
+      newInvoice.totalAmount = totalAmount;
+      newInvoice.totalFees = totalFee;
+      invoices.unshift(newInvoice);
     } catch (error) {
       this.logger.error(`${logPrefix()} ${error}`);
       throw new HttpException(

@@ -742,6 +742,9 @@ export class UserService {
         where: {
           user_id,
         },
+        orderBy: {
+          id: 'desc',
+        },
       });
     } catch (error) {
       this.logger.error(`${logPrefix()} Error getting notifications: ${error}`);

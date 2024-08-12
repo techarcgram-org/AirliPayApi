@@ -30,7 +30,7 @@ export class InvoiceService {
         skip: page ? (page - 1) * pageSize : undefined,
         take: pageSize,
         orderBy: {
-          id: 'desc',
+          created_at: 'desc',
         },
       });
     } catch (error) {
