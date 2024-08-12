@@ -406,6 +406,9 @@ export class ClientService {
         where: {
           client_id: clientId,
         },
+        orderBy: {
+          id: 'desc',
+        },
       });
     } catch (error) {
       this.logger.error(`${logPrefix()} ${error}`);
