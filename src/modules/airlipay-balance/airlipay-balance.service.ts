@@ -75,7 +75,7 @@ export class AirlipayBalanceService {
       newBalance = await this.prismaService.airlipay_balances.create({
         data: {
           user_id: userId,
-          balance: toAirliPayMoney(10000),
+          balance: toAirliPayMoney(0),
           created_at: moment().format(),
           updated_at: moment().format(),
         },
@@ -134,6 +134,7 @@ export class AirlipayBalanceService {
       });
       phoneNumber = userObj.addresses.primary_phone_number;
     }
+
     // let pendingTransac: early_transactions;
     let earlyBalance: airlipay_balances;
     let transaction: early_transactions;
