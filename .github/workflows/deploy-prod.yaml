@@ -1,7 +1,7 @@
 # instead of deploying latest, lets rework this later to use tags
 name: Deploy (production)
 env:
-  REGISTRY: rg.fr-par.scw.cloud/apiv2
+  REGISTRY: ghcr.io/techarcgram-org
   IMAGE_NAME: api-nest
   REGISTRY_USERNAME: nologin
 on:
