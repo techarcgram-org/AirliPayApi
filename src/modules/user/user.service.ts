@@ -17,8 +17,14 @@ import {
   constructUsersArrayFromCsv,
   generatePasswordHash,
   logPrefix,
+  telecomOperator,
 } from 'src/common/utils';
-import { Prisma, account_status_types, banks } from '@prisma/client';
+import {
+  Prisma,
+  account_status_types,
+  banks,
+  user_mobile_money_accounts,
+} from '@prisma/client';
 import { UpdatePhoneDto } from './dto/update-phone.dto';
 
 @Injectable()
@@ -119,6 +125,7 @@ export class UserService {
         client.name.toLocaleLowerCase().slice(0, 2) +
         createUserDto.name.toLocaleLowerCase().slice(0, 2) +
         random;
+
       user = await this.prismaService.users.create({
         data: {
           name: createUserDto.name,
@@ -155,6 +162,18 @@ export class UserService {
           updated_at: moment().format(),
         },
       });
+
+      if (createUserDto.primaryPhone) {
+        const phoneData: any = {
+          phone_number: createUserDto.primaryPhone,
+          user_id: user.id,
+          operator: telecomOperator(`237${createUserDto.primaryPhone}`),
+        };
+
+        await this.prismaService.user_mobile_money_accounts.create({
+          data: phoneData,
+        });
+      }
     } catch (error) {
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&
@@ -252,6 +271,18 @@ export class UserService {
               },
             }),
           );
+
+          if (user.primaryPhone) {
+            const phoneData: any = {
+              phone_number: user.primaryPhone,
+              user_id: user.id,
+              operator: telecomOperator(`237${user.primaryPhone}`),
+            };
+
+            await this.prismaService.user_mobile_money_accounts.create({
+              data: phoneData,
+            });
+          }
         } catch (error) {
           if (
             error instanceof Prisma.PrismaClientKnownRequestError &&

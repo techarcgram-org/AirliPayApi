@@ -19,7 +19,7 @@ export class LoggerMiddleware implements NestMiddleware {
       const contentLength = res.get('content-length');
       const durationInMs = (end[0] * 1e9 + end[1]) / 1e6; // Convert duration to milliseconds
       this.logger.log(
-        `${logPrefix()} - [${method}] - ${originalUrl} ${statusCode} - ${durationInMs}ms `,
+        `[${method}] - ${originalUrl} ${statusCode} - ${durationInMs}ms `,
       );
     });
 

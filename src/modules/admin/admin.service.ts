@@ -11,6 +11,7 @@ import {
   transaction_types,
 } from '@prisma/client';
 import { generatePasswordHash, logPrefix } from 'src/common/utils';
+import { In } from 'typeorm';
 
 @Injectable()
 export class AdminService {
@@ -355,6 +356,194 @@ export class AdminService {
     const unPaidInvoices = await this.prismaService.invoices.count({
       where: {
         status: invoice_status.NOT_TREATED,
+      },
+    });
+
+    return {
+      admins: {
+        active: activeAdmins,
+        pending: pendingAdmins,
+        deactivated: deActivatedAdmins,
+        blocked: blockedAdmins,
+      },
+      users: {
+        active: activeUsers,
+        pending: pendingUsers,
+        deactivated: deActivatedUsers,
+        blocked: blockedUsers,
+      },
+      clients: {
+        active: activeClients,
+        pending: pendingClients,
+        deactivated: deActivatedClients,
+        blocked: blockedClients,
+      },
+      transactions: {
+        all: allTransactions,
+        success: successfulTransactions,
+        failed: failedTransactions,
+      },
+      invoices: {
+        paid: paidInvoices,
+        unpaid: unPaidInvoices,
+      },
+    };
+  }
+
+  async getAdminDashboardMetricsByClientId(client_id: number) {
+    // Fetch admin metrics
+    const activeAdmins = await this.prismaService.admins.count({
+      where: {
+        accounts: {
+          account_status: account_status_types.ACTIVE,
+        },
+      },
+    });
+
+    const pendingAdmins = await this.prismaService.admins.count({
+      where: {
+        accounts: {
+          account_status: account_status_types.PENDING,
+        },
+      },
+    });
+
+    const deActivatedAdmins = await this.prismaService.admins.count({
+      where: {
+        accounts: {
+          account_status: account_status_types.DEACTIVATED,
+        },
+      },
+    });
+
+    const blockedAdmins = await this.prismaService.admins.count({
+      where: {
+        accounts: {
+          account_status: account_status_types.BLOCKED,
+        },
+      },
+    });
+
+    // Fetch user metrics
+    const activeUsers = await this.prismaService.users.count({
+      where: {
+        accounts: {
+          account_status: account_status_types.ACTIVE,
+        },
+        client_id: client_id,
+      },
+    });
+
+    const pendingUsers = await this.prismaService.users.count({
+      where: {
+        accounts: {
+          account_status: account_status_types.PENDING,
+        },
+        client_id: client_id,
+      },
+    });
+
+    const deActivatedUsers = await this.prismaService.users.count({
+      where: {
+        accounts: {
+          account_status: account_status_types.DEACTIVATED,
+        },
+        client_id: client_id,
+      },
+    });
+
+    const blockedUsers = await this.prismaService.users.count({
+      where: {
+        accounts: {
+          account_status: account_status_types.BLOCKED,
+        },
+        client_id: client_id,
+      },
+    });
+
+    // Fetch client metrics
+    const activeClients = await this.prismaService.clients.count({
+      where: {
+        accounts: {
+          account_status: account_status_types.ACTIVE,
+        },
+      },
+    });
+
+    const pendingClients = await this.prismaService.clients.count({
+      where: {
+        accounts: {
+          account_status: account_status_types.PENDING,
+        },
+      },
+    });
+
+    const deActivatedClients = await this.prismaService.clients.count({
+      where: {
+        accounts: {
+          account_status: account_status_types.DEACTIVATED,
+        },
+      },
+    });
+
+    const blockedClients = await this.prismaService.clients.count({
+      where: {
+        accounts: {
+          account_status: account_status_types.BLOCKED,
+        },
+      },
+    });
+
+    // Fetch transaction metrics
+
+    const client = await this.prismaService.clients.findFirst({
+      where: {
+        id: client_id,
+      },
+      include: {
+        users: true,
+      },
+    });
+    const client_users_id = client.users.map((user) => user.id);
+
+    const allTransactions = await this.prismaService.early_transactions.count({
+      where: {
+        user_id: {
+          in: client_users_id,
+        },
+      },
+    });
+    const successfulTransactions =
+      await this.prismaService.early_transactions.count({
+        where: {
+          status: PaymentStatus.SUCCESS,
+          user_id: {
+            in: client_users_id,
+          },
+        },
+      });
+    const failedTransactions =
+      await this.prismaService.early_transactions.count({
+        where: {
+          status: PaymentStatus.FAILED,
+          user_id: {
+            in: client_users_id,
+          },
+        },
+      });
+
+    // Fetch invoice metrics
+    const paidInvoices = await this.prismaService.invoices.count({
+      where: {
+        status: invoice_status.TREATED,
+        client_id: client_id,
+      },
+    });
+
+    const unPaidInvoices = await this.prismaService.invoices.count({
+      where: {
+        status: invoice_status.NOT_TREATED,
+        client_id: client_id,
       },
     });
 

@@ -13,6 +13,7 @@ import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { GetUser } from 'src/common/decorators/get-user.decorator';
 
 @Controller('admin')
 export class AdminController {
@@ -56,7 +57,11 @@ export class AdminController {
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
   @Get('dashboard/metrics')
-  getAdminDashboardMetrics() {
-    return this.adminService.getAdminDashboardMetrics();
+  getAdminDashboardMetrics(@GetUser() user: any) {
+    if (user.roles.includes('ADMIN')) {
+      return this.adminService.getAdminDashboardMetrics();
+    } else {
+      return this.adminService.getAdminDashboardMetricsByClientId(user.sub);
+    }
   }
 }

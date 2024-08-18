@@ -17,7 +17,12 @@ import {
 } from 'src/common/utils';
 import * as moment from 'moment';
 import { MailService } from 'src/core/mail/mail.service';
-import { Prisma, account_status_types, invoice_status } from '@prisma/client';
+import {
+  Prisma,
+  account_status_types,
+  invoice_status,
+  transaction_types,
+} from '@prisma/client';
 import { Cron } from '@nestjs/schedule';
 import { CreateClientBankDto } from './dto/create-client-bank.dto';
 import { UpdateInvoiceDto } from '../invoice/dto/update-invoice.dto';
@@ -32,9 +37,10 @@ export class ClientService {
 
   async create(createClientDto: CreateClientDto, file: Express.Multer.File) {
     let client;
-    const nextPaydate = moment(createClientDto.nextPaymentDate).isValid()
-      ? moment(createClientDto.nextPaymentDate).format()
-      : null;
+    const next_payment_date = moment().isBefore(moment().date(28))
+      ? moment().date(28).format()
+      : moment().add(1, 'months').date(28).format();
+
     try {
       client = await this.prismaService.clients.create({
         data: {
@@ -43,10 +49,7 @@ export class ClientService {
           tax_id: createClientDto.taxId,
           client_commision: createClientDto.clientCommision,
           // earning_report_status: createClientDto.earning_report_status,
-          next_payment_date: moment(
-            createClientDto.nextPaymentDate,
-            'YYYY-MM-DD',
-          ).format(),
+          next_payment_date: next_payment_date,
           employee_roaster_file: file?.filename || null,
           accounts: {
             create: {
@@ -412,49 +415,91 @@ export class ClientService {
         },
       });
 
-      const lastInvoice = invoices[0];
-      const currentDate = new Date();
-      let totalAmount = 0;
-      let totalFee = 0;
-      const newInvoice: any = {
-        from: lastInvoice.to,
-        to: currentDate,
-        transactions: [],
-      };
-
-      const newTransactions =
-        await this.prismaService.early_transactions.findMany({
-          where: {
-            // user
-            initiated_date: {
-              gte: newInvoice.from,
-              lt: newInvoice.to,
-            },
-          },
-          orderBy: {
-            initiated_date: 'desc',
-          },
-        });
-
-      // Sum the fees and amount
-      newTransactions.forEach((transaction) => {
-        totalAmount += transaction.amount;
-        totalFee += transaction.fees;
-      });
-      const datePrefix = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-      const invoiceNumber = `${datePrefix}-${'Auto'}`;
-
-      newInvoice.transactions = newTransactions;
-      newInvoice.invoice_number = invoiceNumber;
-      newInvoice.client_id = clientId;
-      newInvoice.status = InvoiceStatus.NOT_TREATED;
-      newInvoice.totalAmount = totalAmount;
-      newInvoice.totalFees = totalFee;
       const client = await this.prismaService.clients.findUnique({
         where: {
           id: clientId,
         },
       });
+
+      const lastInvoice = invoices[0];
+      const currentDate = new Date();
+      let totalAmount = 0;
+      let totalFee = 0;
+      const newInvoice: any = {
+        from: lastInvoice ? lastInvoice.to : client.created_at,
+        to: currentDate,
+        transactions: [],
+      };
+
+      const datePrefix = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+      const invoiceNumber = `${datePrefix}-${'Auto'}`;
+
+      const users = await this.prismaService.users.findMany({
+        where: {
+          client_id: clientId,
+        },
+      });
+
+      let transactObj: Array<{
+        userId: any;
+        name: any;
+        baseSalary: any;
+        transactions: any;
+      }> = [];
+      for (const user of users) {
+        const transactions =
+          await this.prismaService.early_transactions.findMany({
+            where: {
+              initiated_date: {
+                gte: newInvoice.from,
+                lt: newInvoice.to,
+              },
+              user_id: user.id,
+              transaction_type: transaction_types.WITHDRAW,
+            },
+            orderBy: {
+              initiated_date: 'desc',
+            },
+          });
+
+        transactions.forEach((transaction) => {
+          totalAmount += transaction.amount;
+          totalFee += transaction.fees;
+        });
+
+        transactObj.push({
+          userId: user.id,
+          name: user.name,
+          baseSalary: user.base_salary,
+          transactions: transactions,
+        });
+        const user_balance =
+          await this.prismaService.airlipay_balances.findFirst({
+            where: {
+              user_id: user.id,
+            },
+          });
+
+        if (user_balance) {
+          await this.prismaService.airlipay_balances.update({
+            where: {
+              id: user_balance.id,
+            },
+            data: {
+              balance: 0,
+            },
+          });
+        }
+      }
+
+      newInvoice.transactions = transactObj;
+      newInvoice.invoice_number = invoiceNumber;
+      newInvoice.client_id = clientId;
+      newInvoice.status = InvoiceStatus.NOT_TREATED;
+      newInvoice.totalAmount = totalAmount;
+      newInvoice.totalFees = totalFee;
+      newInvoice.taxes = 0;
+
       newInvoice.client = client;
       invoices.unshift(newInvoice);
     } catch (error) {
@@ -464,6 +509,7 @@ export class ClientService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+
     return invoices;
   }
 

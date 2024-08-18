@@ -1,6 +1,10 @@
 export enum TelecomOperator {
   MTN = 'MTN',
   ORANGE = 'ORANGE',
+  CAMTEL = 'CAMTEL',
+  YOOMEE = 'YOOMEE',
+  NEXTEL = 'NEXTEL',
+  MAVIANCE = 'MAVIANCE',
   UNKNOWN = 'UNKNOWN',
 }
 

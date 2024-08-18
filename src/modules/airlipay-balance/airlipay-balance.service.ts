@@ -29,6 +29,8 @@ import {
   airlipay_balances,
   early_transactions,
   notification_status,
+  operators,
+  users,
 } from '@prisma/client';
 import { UpdateAirlipayBalanceDto } from './dto/update-airlipay-balance.dto';
 import { Cron, CronExpression } from '@nestjs/schedule';
@@ -66,6 +68,7 @@ export class AirlipayBalanceService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+
     return balance;
   }
 
@@ -188,7 +191,7 @@ export class AirlipayBalanceService {
           execution_date: moment().format(),
           amount: toAirliPayMoney(amount),
           fees: charges,
-          operator: telecomOperator(phoneNumber),
+          operator: telecomOperator(`237${phoneNumber}`),
           phone_number: phoneNumber,
           new_balance: subtractBFromA(earlyBalance.balance, amount + charges),
           old_balance: earlyBalance.balance,
@@ -218,6 +221,8 @@ export class AirlipayBalanceService {
       //   },
       // });
     } catch (error) {
+      console.log(error);
+
       this.logger.error(`${logPrefix()} ${error}`);
       throw new HttpException(
         `Server error: ${error}`,
@@ -225,64 +230,144 @@ export class AirlipayBalanceService {
       );
     }
 
-    const response = await this.paymentService.onFapshiPaymentCompleted(
-      payment.transId,
-    );
+    const handlePaymentComplete = async () => {
+      const response = await this.paymentService.onFapshiPaymentCompleted(
+        payment.transId,
+      );
 
-    const airlipayUpdateObject: UpdateAirlipayBalanceDto = {
-      id: earlyBalance.id,
-      balance: earlyBalance.balance,
-      early_transaction_id: transaction.id,
-    };
-    if (response.status === PaymentStatus.SUCCESS) {
-      try {
+      const airlipayUpdateObject: UpdateAirlipayBalanceDto = {
+        id: earlyBalance.id,
+        balance: earlyBalance.balance,
+        early_transaction_id: transaction.id,
+      };
+      const userObject = await this.prismaService.users.findFirst({
+        where: {
+          id: earlyBalance.user_id,
+        },
+      });
+      if (response.status === PaymentStatus.SUCCESS) {
+        try {
+          await this.prismaService.early_transactions.update({
+            where: {
+              id: transaction.id,
+            },
+            data: {
+              status: 'SUCCESS',
+              updated_at: moment().format(),
+            },
+          });
+
+          await this.prismaService.airlipay_balances.update({
+            where: {
+              id: earlyBalance.id,
+            },
+            data: {
+              balance: earlyBalance.balance - (amount + charges),
+              updated_at: moment().format(),
+            },
+          });
+
+          this.sendNotificationOnPaymentComplete(
+            userObject,
+            amount,
+            PaymentStatus.SUCCESS,
+          );
+        } catch (error) {
+          this.logger.error(`${logPrefix()} ${error}`);
+          throw new HttpException(
+            `Error updating early withdrawal transaction ${error}`,
+            HttpStatus.INTERNAL_SERVER_ERROR,
+          );
+        }
+      } else if (response.status === PaymentStatus.FAILED) {
         await this.prismaService.early_transactions.update({
           where: {
             id: transaction.id,
           },
           data: {
-            status: 'SUCCESS',
+            status: 'FAILED',
             updated_at: moment().format(),
           },
         });
-
-        await this.prismaService.airlipay_balances.update({
-          where: {
-            id: earlyBalance.id,
-          },
-          data: {
-            balance: earlyBalance.balance - (amount + charges),
-            updated_at: moment().format(),
-          },
-        });
-      } catch (error) {
-        this.logger.error(`${logPrefix()} ${error}`);
-        throw new HttpException(
-          `Error updating early withdrawal transaction ${error}`,
-          HttpStatus.INTERNAL_SERVER_ERROR,
+        this.update(airlipayUpdateObject);
+        this.logger.error('payment failed');
+        this.sendNotificationOnPaymentComplete(
+          userObject,
+          amount,
+          PaymentStatus.FAILED,
         );
       }
-    } else if (response.status === PaymentStatus.FAILED) {
-      await this.prismaService.early_transactions.update({
+
+      transaction = await this.prismaService.early_transactions.findFirst({
         where: {
           id: transaction.id,
         },
-        data: {
-          status: 'FAILED',
-          updated_at: moment().format(),
-        },
       });
-      this.update(airlipayUpdateObject);
-      this.logger.error('payment failed');
-    }
+    };
 
-    transaction = await this.prismaService.early_transactions.findFirst({
+    handlePaymentComplete();
+
+    return transaction;
+  }
+
+  async sendNotificationOnPaymentComplete(
+    user: users,
+    amount: number,
+    status: PaymentStatus,
+  ) {
+    // preparing notification messages
+    const userInfo = await this.prismaService.account_settings.findFirst({
       where: {
-        id: transaction.id,
+        user_id: user.id,
+      },
+      select: {
+        device_id: true,
       },
     });
 
-    return transaction;
+    this.logger.log(`${logPrefix()}: Notification User INFO: ${userInfo}`);
+
+    if (userInfo?.device_id) {
+      const notificationPush = {
+        to: userInfo?.device_id,
+        sound: 'default',
+        title:
+          status === PaymentStatus.SUCCESS
+            ? 'Withdrawal Success'
+            : 'Withdrawal Failed',
+        body:
+          status === PaymentStatus.SUCCESS
+            ? `You have successful withdrawn ${toAirliPayMoney(
+                amount,
+              )} from your airlipay account. Enjoy💙`
+            : `You have withdrawal of ${toAirliPayMoney(
+                amount,
+              )} from your airlipay account has failed, please try again later or contact support`,
+      };
+      this.notificationService.sendNotification([notificationPush]);
+    }
+
+    await this.prismaService.notifications.create({
+      data: {
+        title:
+          status === PaymentStatus.SUCCESS
+            ? 'Withdrawal Success'
+            : 'Withdrawal Failed',
+        message:
+          status === PaymentStatus.SUCCESS
+            ? `You have successful withdrawn ${toAirliPayMoney(
+                amount,
+              )} from your airlipay account. Enjoy💙`
+            : `You have withdrawal of ${toAirliPayMoney(
+                amount,
+              )} from your airlipay account has failed, please try again later or contact support`,
+        user_id: user.id,
+        status: notification_status.PENDING,
+        device_id: userInfo?.device_id,
+        created_at: moment().format(),
+        updated_at: moment().format(),
+      },
+    });
   }
 
   async listWithdrawalTransactions(

@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
 import { UpdateInvoiceDto } from './dto/update-invoice.dto';
 import { PrismaService } from 'src/common/services/prisma.service';
-import { logPrefix } from 'src/common/utils';
+import { logPrefix, toAirliPayMoney } from 'src/common/utils';
 import * as moment from 'moment';
 import { Cron } from '@nestjs/schedule';
 import { InvoiceStatus, TransactionType } from 'src/common/constants';
@@ -215,7 +215,7 @@ export class InvoiceService {
               id: user_balance.id,
             },
             data: {
-              balance: 0,
+              balance: toAirliPayMoney(0),
             },
           });
         }

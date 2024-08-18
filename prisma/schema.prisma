@@ -372,8 +372,12 @@ enum invoice_status {
 }
 
 enum operators {
-  ORANGE
   MTN
+  ORANGE
+  CAMTEL
+  YOOMEE
+  NEXTEL
+  MAVIANCE
   UNKNOWN
 }
 

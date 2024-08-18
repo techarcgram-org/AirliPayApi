@@ -10,26 +10,46 @@ import * as streamToPromise from 'stream-to-promise';
 const SALT_ROUNDS = 12;
 
 export const telecomOperator = (phoneNumber: string): TelecomOperator => {
-  const key = phoneNumber[4];
-  if (key === '7' || key === '8') {
+  //MTN
+  let regex = new RegExp(
+    '^(237)?((650|651|652|653|654|680|681|682|683)[0-9]{6}$|(67[0-9]{7})$)',
+  );
+  if (regex.test(phoneNumber)) {
     return TelecomOperator.MTN;
   }
-  if (key === '9') {
+
+  //ORANGE
+  regex = new RegExp(
+    '^(237)?((655|656|657|658|659|686|687)[0-9]{6}$|(69[0-9]{7})$)|(69[0-9]{7}$)',
+  );
+
+  if (regex.test(phoneNumber)) {
     return TelecomOperator.ORANGE;
   }
-  if (phoneNumber.indexOf('46733') === 0) {
-    return TelecomOperator.MTN;
+
+  //CAMTEL
+  regex = new RegExp('^(237)?((222|233|242|243|620)[0-9]{6}$)');
+
+  if (regex.test(phoneNumber)) {
+    return TelecomOperator.CAMTEL;
   }
-  if (phoneNumber.indexOf('23765') < 0) {
-    return TelecomOperator.UNKNOWN;
+
+  //YOOOMEE
+  regex = new RegExp('^(237)?((24)[0-9]{7}$)');
+
+  if (regex.test(phoneNumber)) {
+    return TelecomOperator.YOOMEE;
   }
-  const subKey = phoneNumber[5];
-  if (subKey >= '0' && subKey < '5') {
-    return TelecomOperator.MTN;
+
+  //NEXTEL
+  regex = new RegExp(
+    '^(237)?((66)[0-9]{7}$|(237)?((684|685|688|689)[0-9]{6}$))',
+  );
+
+  if (regex.test(phoneNumber)) {
+    return TelecomOperator.NEXTEL;
   }
-  if (subKey >= '5' && subKey <= '9') {
-    return TelecomOperator.ORANGE;
-  }
+
   return TelecomOperator.UNKNOWN;
 };
 
