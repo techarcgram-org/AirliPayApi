@@ -212,14 +212,6 @@ export class AirlipayBalanceService {
         phoneNumber,
         amount,
       );
-      // await this.prismaService.airlipay_balances.update({
-      //   where: {
-      //     id: earlyBalance.id,
-      //   },
-      //   data: {
-      //     balance: subtractBFromA(earlyBalance.balance, amount),
-      //   },
-      // });
     } catch (error) {
       console.log(error);
 
