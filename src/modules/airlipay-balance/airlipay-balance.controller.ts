@@ -55,7 +55,7 @@ export class AirlipayBalanceController {
     );
   }
 
-  @Get('/fapshi_webhook')
+  @Post('/fapshi-webhook')
   async fatshiResponse(@Body() body: any) {
     this.logger.log(body);
     // this.logger.log(res);
