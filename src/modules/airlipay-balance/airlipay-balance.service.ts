@@ -375,6 +375,23 @@ export class AirlipayBalanceService {
         toAirliPayMoney(response.amount),
         PaymentStatus.FAILED,
       );
+    } else if (response.status === PaymentStatus.EXPIRED) {
+      await this.prismaService.early_transactions.update({
+        where: {
+          id: transaction.id,
+        },
+        data: {
+          status: 'FAILED',
+          updated_at: moment().format(),
+        },
+      });
+      this.update(airlipayUpdateObject);
+      this.logger.error('payment expired ');
+      this.sendNotificationOnPaymentComplete(
+        user,
+        toAirliPayMoney(response.amount),
+        PaymentStatus.FAILED,
+      );
     }
   }
 
