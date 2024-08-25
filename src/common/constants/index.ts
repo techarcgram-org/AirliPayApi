@@ -24,6 +24,7 @@ export enum PaymentStatus {
   EXECUTED_WITH_STATUS_PENDING = 'EXECUTED WITH STATUS PENDING',
   CRITICAL_ERROR = 'CRITICAL_ERROR',
   CREATED = 'CREATED',
+  SUCCESSFUL = 'SUCCESSFUL',
 }
 
 export enum PaymentProvider {

@@ -18,6 +18,7 @@ import {
   toAirliPayMoney,
 } from 'src/common/utils';
 import {
+  PaymentProvider,
   PaymentStatus,
   PaymentType,
   PusherChannels,
@@ -302,8 +303,6 @@ export class AirlipayBalanceService {
   }
 
   async handleWebhookComplete(response: any) {
-    console.log('This is the webhook response =====>, ', response, '<======');
-
     const transaction = await this.prismaService.early_transactions.findFirst({
       where: {
         id: Number(response.externalId),
@@ -329,7 +328,7 @@ export class AirlipayBalanceService {
       balance: earlyBalance.balance + response.amount + charges,
       early_transaction_id: transaction.id,
     };
-    if (response.status === PaymentStatus.SUCCESS) {
+    if (response.status === PaymentStatus.SUCCESSFUL) {
       try {
         await this.prismaService.early_transactions.update({
           where: {
@@ -561,6 +560,7 @@ export class AirlipayBalanceService {
               old_balance: balance.balance,
               created_at: moment().format(),
               updated_at: moment().format(),
+              // operator: PaymentProvider.INTERNAL
             },
           });
 
