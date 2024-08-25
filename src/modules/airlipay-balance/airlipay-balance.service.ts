@@ -306,19 +306,19 @@ export class AirlipayBalanceService {
 
     const transaction = await this.prismaService.early_transactions.findFirst({
       where: {
-        id: response.externalId,
+        id: Number(response.externalId),
       },
     });
 
     const user = await this.prismaService.users.findFirst({
       where: {
-        id: response.userId,
+        id: transaction.user_id,
       },
     });
 
     const earlyBalance = await this.prismaService.airlipay_balances.findFirst({
       where: {
-        user_id: response.userId,
+        user_id: transaction.user_id,
       },
     });
 

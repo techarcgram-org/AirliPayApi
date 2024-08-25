@@ -57,8 +57,6 @@ export class AirlipayBalanceController {
 
   @Post('/fapshi-webhook')
   async fatshiResponse(@Body() body: any) {
-    this.logger.log(body);
-    // this.logger.log(res);
     await this.airlipayBalanceService.handleWebhookComplete(body);
   }
 }
