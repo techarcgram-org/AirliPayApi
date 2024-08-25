@@ -20,6 +20,7 @@ export class FapshiService {
   async initiatePayout(
     phone: string,
     amount: number,
+    externalId: number,
     medium?: string,
     name?: string,
     email?: string,
@@ -28,6 +29,7 @@ export class FapshiService {
     const data = {
       amount,
       phone,
+      externalId,
       medium,
       name,
       email,

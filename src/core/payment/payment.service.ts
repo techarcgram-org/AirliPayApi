@@ -76,6 +76,7 @@ export class PaymentService {
   async initiateFapshiPayout(
     phone: string,
     amount: number,
+    externalId: number,
     medium?: string,
     name?: string,
     email?: string,
@@ -84,6 +85,7 @@ export class PaymentService {
     const fapshiPayment = await this.fapshiService.initiatePayout(
       phone,
       amount,
+      externalId,
       medium,
       name,
       email,

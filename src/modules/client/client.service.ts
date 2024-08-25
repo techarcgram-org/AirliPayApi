@@ -473,23 +473,6 @@ export class ClientService {
           baseSalary: user.base_salary,
           transactions: transactions,
         });
-        const user_balance =
-          await this.prismaService.airlipay_balances.findFirst({
-            where: {
-              user_id: user.id,
-            },
-          });
-
-        if (user_balance) {
-          await this.prismaService.airlipay_balances.update({
-            where: {
-              id: user_balance.id,
-            },
-            data: {
-              balance: 0,
-            },
-          });
-        }
       }
 
       newInvoice.transactions = transactObj;
