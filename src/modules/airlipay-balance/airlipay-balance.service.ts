@@ -322,9 +322,11 @@ export class AirlipayBalanceService {
       },
     });
 
+    const charges = (5 / 100) * response.amount;
+
     const airlipayUpdateObject: UpdateAirlipayBalanceDto = {
       id: earlyBalance.id,
-      balance: earlyBalance.balance + response.amount,
+      balance: earlyBalance.balance + response.amount + charges,
       early_transaction_id: transaction.id,
     };
     if (response.status === PaymentStatus.SUCCESS) {
