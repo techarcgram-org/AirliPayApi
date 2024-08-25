@@ -134,32 +134,33 @@ export class AirlipayBalanceService {
       phoneNumber = userObj.addresses.primary_phone_number;
     }
 
-    // let pendingTransac: early_transactions;
+    let pendingTransaction: early_transactions;
     let earlyBalance: airlipay_balances;
     let transaction: early_transactions;
     let payment;
     const charges = (5 / 100) * amount;
     this.logger.log('CHARGES', charges);
-    // try {
-    //   pendingTransac = await this.prismaService.early_transactions.findFirst({
-    //     where: {
-    //       user_id: user.sub,
-    //       status: PaymentStatus.PENDING,
-    //     },
-    //   });
-    // } catch (error) {
-    //   this.logger.error(`${logPrefix()} ${error}`);
-    //   throw new HttpException(
-    //     `error retriving pending transaction`,
-    //     HttpStatus.INTERNAL_SERVER_ERROR,
-    //   );
-    // }
-    // if (pendingTransac) {
-    //   throw new HttpException(
-    //     `Already existing pending transaction`,
-    //     HttpStatus.BAD_REQUEST,
-    //   );
-    // }
+    try {
+      pendingTransaction =
+        await this.prismaService.early_transactions.findFirst({
+          where: {
+            user_id: user.sub,
+            status: PaymentStatus.PENDING,
+          },
+        });
+    } catch (error) {
+      this.logger.error(`${logPrefix()} ${error}`);
+      throw new HttpException(
+        `error retriving pending transaction`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+    if (pendingTransaction) {
+      throw new HttpException(
+        `Already existing pending transaction`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     try {
       earlyBalance =
         user.sub &&
