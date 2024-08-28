@@ -118,6 +118,7 @@ export class InvoiceService {
       .startOf('day')
       .format();
     const endDate = moment().subtract(1, 'day').date(26).endOf('day').format();
+    const queryEndDate = moment().date(29).endOf('day').format();
     // const dateLimit = moment().subtract(1, 'month').date(28).format('YYYY-MM-DD') + 'T00:00:00.000Z';
     let clients;
     try {
@@ -128,7 +129,7 @@ export class InvoiceService {
         where: {
           next_payment_date: {
             gt: startDate,
-            lte: endDate,
+            lte: queryEndDate,
           },
         },
         include: {
