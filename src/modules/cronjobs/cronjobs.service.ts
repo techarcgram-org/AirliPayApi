@@ -16,7 +16,7 @@ export class CronjobsService {
   }
 
   // @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT, { name: 'invoiceGenerateJob' })
-  @Cron('0 0 30 * *', { name: 'invoiceGenerateJob' })
+  @Cron('0 0 28 * *', { name: 'invoiceGenerateJob' })
   async generateInvoice() {
     this.invoiceService.generateInvoice();
   }

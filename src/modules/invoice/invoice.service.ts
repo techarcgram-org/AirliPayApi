@@ -4,7 +4,7 @@ import { UpdateInvoiceDto } from './dto/update-invoice.dto';
 import { PrismaService } from 'src/common/services/prisma.service';
 import { logPrefix, toAirliPayMoney } from 'src/common/utils';
 import * as moment from 'moment';
-import { Cron } from '@nestjs/schedule';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { InvoiceStatus, TransactionType } from 'src/common/constants';
 import { ListInvoicesDto } from './dto/list-invoices.dto';
 import { transaction_types, invoice_status } from '@prisma/client';
@@ -107,8 +107,8 @@ export class InvoiceService {
     }
   }
 
-  // @Cron(CronExpression.EVERY_HOUR)
   // @Cron('0 0 0 * * *', { name: 'invoiceGenerateJob' })
+  // @Cron(CronExpression.EVERY_5_MINUTES)
   async generateInvoice() {
     this.logger.debug(`${logPrefix()} => CRON to generate invoice has started`);
 
