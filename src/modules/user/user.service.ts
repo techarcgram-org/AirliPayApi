@@ -868,7 +868,7 @@ export class UserService {
         const lastInvoice = invoices?.[0];
         const currentDate = new Date();
         const newInvoice = {
-          from: invoices.length > 0 ? lastInvoice.to : user.created_at,
+          from: lastInvoice ? lastInvoice.to : user.created_at,
           to: currentDate,
           transactions: [],
         };

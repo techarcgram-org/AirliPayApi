@@ -421,7 +421,7 @@ export class ClientService {
         },
       });
 
-      const lastInvoice = invoices[0];
+      const lastInvoice = invoices?.[0];
       const currentDate = new Date();
       let totalAmount = 0;
       let totalFee = 0;
