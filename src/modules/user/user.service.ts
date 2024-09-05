@@ -873,6 +873,9 @@ export class UserService {
           transactions: [],
         };
 
+        console.log(newInvoice);
+        console.log(lastInvoice);
+
         const newTransactions =
           await this.prismaService.early_transactions.findMany({
             where: {
